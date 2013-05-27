@@ -18,13 +18,15 @@
         <div class="row-fluid">
             <div class="center-box">
                 <p class="lead">To upload your cards list click button below.</p>
-                <form>
-                    <div class="alert alert-error fade in">
-                        <button type="button" class="close" data-dismiss="alert">×</button>
-                        <strong>Error!</strong> Uploaded file was not specified or has wrong structure. Please fix it and try one more time.
-                    </div>
+                {% if has_error %}
+                <div class="alert alert-error fade in">
+                    <button type="button" class="close" data-dismiss="alert">×</button>
+                    <strong>Error!</strong> Uploaded file was not specified or has wrong structure. Please fix it and try one more time.
+                </div>
+                {% endif %}
+                <form action="{{ url_for('index') }}" method="post" enctype="multipart/form-data">
                     <p>
-                        <input type="file" title="Select file">
+                        <input type="file" title="Select file" name="cards_list">
                         <input type="submit" class="btn btn-primary pull-right">
                     </p>
                 </form>
