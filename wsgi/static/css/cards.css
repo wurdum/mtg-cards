@@ -1,0 +1,9 @@
+.center-box {
+    margin: 10% auto 0 auto;
+    width: 27%;
+    float: none;
+}
+
+.indented-top {
+    margin-top: 60px;
+}

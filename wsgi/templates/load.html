@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-responsive.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/prettify.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-1.10.0.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.file-input.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/prettify.js') }}"></script>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="center-box">
+                <p class="lead">To upload your cards list click button below.</p>
+                <form>
+                    <div class="alert alert-error fade in">
+                        <button type="button" class="close" data-dismiss="alert">×</button>
+                        <strong>Error!</strong> Uploaded file was not specified or has wrong structure. Please fix it and try one more time.
+                    </div>
+                    <p>
+                        <input type="file" title="Select file">
+                        <input type="submit" class="btn btn-primary pull-right">
+                    </p>
+                </form>
+                <dl>
+                    <dt>Info:</dt>
+                    <dd>Uploaded file should be <code>tab</code> or <code>space</code> separated
+                        with <code>UTF-8</code> encoding.</dd>
+                    <dt>File example (line numbers just to improve readability):</dt>
+                    <dd>
+<pre class="prettyprint linenums">Dryad Arbor  2
+Ancient Tomb    4
+Apocalypse Hydra    3
+Dragonmaster Outcast  4
+Channel   1
+Desert  3</pre>
+                    </dd>
+                </dl>
+                <a href="#" class="pull-right">Go to example cards list</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(function(){
+            window.prettyPrint && prettyPrint()
+        })
+    </script>
+</body>
+</html>
