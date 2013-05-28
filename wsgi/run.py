@@ -1,16 +1,9 @@
-import random
-import string
-import os
-from flask import Flask, url_for, redirect
-from flask import render_template
-from flask import request
-from werkzeug.utils import secure_filename
+from flask import Flask, render_template, request, url_for, redirect
+import ext
+import scraper
+import db
 
 app = Flask(__name__)
-
-
-def get_token(size=6, chars=string.ascii_lowercase + string.digits):
-    return ''.join(random.choice(chars) for x in range(size))
 
 @app.route("/", methods=['GET'])
 def index():
@@ -21,10 +14,23 @@ def index():
 def upload():
     f = request.files['cards_list']
     if f:
-        # content = f.stream.getvalue()
-        token = get_token()
+        token = ext.get_token()
 
-        return redirect(url_for('cards', token=token))
+        cards = []
+        try:
+            content = ext.read_file(f.stream)
+            parser = scraper.MagiccardsScraper()
+
+            cards = parser.process_cards(content)
+        except Exception, ex:
+            return redirect(url_for('error'))
+        else:
+            db.save_cards(token, cards)
+
+            if len([c for c in cards if not c.is_resolved]) > 0:
+                return redirect(url_for('stats', token=token))
+
+            return redirect(url_for('cards', token=token))
 
     return render_template('load.html', has_error=True)
 
@@ -33,6 +39,14 @@ def upload():
 def cards(token=None):
     return token
 
+
+@app.route('/s/<token>', method=['GET'])
+def stats(token=None):
+    return token
+
+@app.route('/err')
+def error():
+    return render_template('error.html')
 
 if __name__ == "__main__":
     app.run(debug="True")
