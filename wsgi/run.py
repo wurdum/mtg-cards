@@ -5,6 +5,7 @@ import db
 
 app = Flask(__name__)
 
+
 @app.route("/", methods=['GET'])
 def index():
     return render_template('load.html')
@@ -40,9 +41,10 @@ def cards(token=None):
     return token
 
 
-@app.route('/s/<token>', method=['GET'])
+@app.route('/s/<token>', methods=['GET'])
 def stats(token=None):
     return token
+
 
 @app.route('/err')
 def error():
