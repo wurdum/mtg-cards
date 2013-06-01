@@ -51,3 +51,11 @@ class CardPrices(object):
         return "%s: l[%s] m[%s] h[%s]" % (self.url, self.low, self.mid, self.high)
 
 
+def calculate_sum(cards, prop):
+    """Calculates sum of the prices for cards list
+
+    :param cards: cards list
+    :param prop: price that will be summed (low, mid, high)
+    :return: sum as float number
+    """
+    return sum([float(card.prices.__dict__[prop][1:])*card.number for card in cards if card.prices])

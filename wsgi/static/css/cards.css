@@ -7,3 +7,9 @@
 .indented-top {
     margin-top: 60px;
 }
+
+.content {
+    width: 1200px;
+    margin: 30px auto 0 auto;
+    float: none;
+}

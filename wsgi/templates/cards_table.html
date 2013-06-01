@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th class="span1">number</th>
+            <th class="span3">name</th>
+            <th class="span9">description</th>
+            <th>prices</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for card in cards %}
+        <tr>
+            <td class="text-center">{{ card.number }}</td>
+            <td><a href="{{ card.info.url if card.info else '#' }}">{{ card.name }}</a></td>
+            <td>
+                {% if card.info %}
+                    {% for line in card.info.description %}
+                        <p>{{ line }}</p>
+                    {% endfor %}
+                {% endif %}
+            </td>
+            <td>
+                {% if card.prices %}
+                    <p>low: {{ card.prices.low }}</p>
+                    <p>mid: {{ card.prices.mid }}</p>
+                    <p>high: {{ card.prices.high }}</p>
+                    <p><a href="{{ card.prices.url }}">at TCGPlayer</a></p>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr class="info">
+            <th>{{ cards_num }}</th>
+            <th></th>
+            <th></th>
+            <th>
+                <p>low: ${{ sum_prices['low'] }}</p>
+                <p>mid: ${{ sum_prices['mid'] }}</p>
+                <p>high: ${{ sum_prices['high'] }}</p>
+            </th>
+        </tr>
+    </tfoot>
+</table>
+{% endblock %}

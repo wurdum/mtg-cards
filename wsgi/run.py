@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, url_for, redirect
 import ext
 import scraper
 import db
+import models
 
 app = Flask(__name__)
 
@@ -28,7 +29,7 @@ def upload():
         else:
             db.save_cards(token, cards)
 
-            if len([c for c in cards if not c.is_resolved]) > 0:
+            if len([c for c in cards if not c.has_info or not c.has_prices]) > 0:
                 return redirect(url_for('stats', token=token))
 
             return redirect(url_for('cards', token=token))
@@ -38,7 +39,11 @@ def upload():
 
 @app.route('/l/<token>', methods=['GET'])
 def cards(token=None):
-    return token
+    cards = db.get_cards(token)
+    return render_template('cards_table.html', cards=cards, cards_num=sum([card.number for card in cards]),
+                           sum_prices={'low': models.calculate_sum(cards, 'low'),
+                                       'mid': models.calculate_sum(cards, 'mid'),
+                                       'high': models.calculate_sum(cards, 'high')})
 
 
 @app.route('/s/<token>', methods=['GET'])

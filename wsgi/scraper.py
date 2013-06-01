@@ -126,9 +126,9 @@ class TCGPlayerScrapper(object):
 
         prices = {'sid': self.sid,
                   'url': self._clear_url_from_partner(tcg_soup.find('td', class_='TCGPHiLoLink').contents[0]['href']),
-                  'low': tcg_soup.find('td', class_='TCGPHiLoLow').contents[1].contents[0],
-                  'mid': tcg_soup.find('td', class_='TCGPHiLoMid').contents[1].contents[0],
-                  'high': tcg_soup.find('td', class_='TCGPHiLoHigh').contents[1].contents[0]}
+                  'low': str(tcg_soup.find('td', class_='TCGPHiLoLow').contents[1].contents[0]),
+                  'mid': str(tcg_soup.find('td', class_='TCGPHiLoMid').contents[1].contents[0]),
+                  'high': str(tcg_soup.find('td', class_='TCGPHiLoHigh').contents[1].contents[0])}
 
         return prices
 
