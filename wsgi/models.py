@@ -1,19 +1,53 @@
 class Card(object):
     """
-    Card model
+    Card model with info and prices
     """
 
-    def __init__(self, name, number, description=None, url=None, img_url=None, prices=None):
+    def __init__(self, name, number, info=None, prices=None):
         self.name = name
         self.number = number
-        self.description = description
-        self.url = url
-        self.img_url = img_url
         self.prices = prices
+        self.info = info
 
     @property
-    def is_resolved(self):
-        return self.url is None
+    def has_info(self):
+        return self.info is None
+
+    @property
+    def has_prices(self):
+        return self.prices is None
 
     def __repr__(self):
         return '%s x %d' % (self.name, self.number)
+
+
+class CardInfo(object):
+    """
+    Card info from www.magiccards.com
+    """
+
+    def __init__(self, url, img_url, description):
+        self.url = url
+        self.img_url = img_url
+        self.description = description
+
+    def __repr__(self):
+        return self.url
+
+
+class CardPrices(object):
+    """
+    Card info from TCGPlayer
+    """
+
+    def __init__(self, sid, url, low, mid, high):
+        self.sid = sid
+        self.url = url
+        self.low = low
+        self.mid = mid
+        self.high = high
+
+    def __repr__(self):
+        return "%s: l[%s] m[%s] h[%s]" % (self.url, self.low, self.mid, self.high)
+
+
