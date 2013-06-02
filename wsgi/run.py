@@ -5,9 +5,7 @@ import db
 import filters
 
 app = Flask(__name__)
-app.add_template_filter(filters.price)
-app.add_template_filter(filters.price_float)
-app.add_template_filter(filters.price_sum)
+filters.register(app)
 
 
 @app.route("/", methods=['GET'])
@@ -35,24 +33,27 @@ def upload():
             if len([c for c in cards if not c.has_info or not c.has_prices]) > 0:
                 return redirect(url_for('stats', token=token))
 
-            return redirect(url_for('cards', token=token, ltype='l'))
+            return redirect(url_for('cards', token=token, repr='l'))
 
     return render_template('load.html', has_error=True)
 
 
-@app.route('/<ltype>/<token>', methods=['GET'])
-def cards(token=None, ltype='l'):
+@app.route('/<repr>/<token>', methods=['GET'])
+def cards(token=None, repr='l'):
     cards = db.get_cards(token)
-    templ_data = {'token': token, 'cards': cards}
+    sort = request.args.get('sort', 'name')
+    order = request.args.get('order', 'asc')
+    key_for_sort = lambda c: c.name if sort == 'name' else filters.price(c, 'low')
 
-    if ltype == 't':
-        templ_data['table'] = True
-        return render_template('cards_table.html', **templ_data)
-    elif ltype == 'l':
-        templ_data['list'] = True
+    templ_data = {'token': token, 'cards': sorted(cards, key=key_for_sort, reverse=order == 'desc'),
+                  'repr': repr, 'sort': sort, 'order': order}
+
+    if repr == 'l':
         return render_template('cards_list.html', **templ_data)
+    elif repr == 't':
+        return render_template('cards_table.html', **templ_data)
     else:
-        return redirect(url_for('error'))
+        return render_template('error.html')
 
 
 @app.route('/s/<token>', methods=['GET'])

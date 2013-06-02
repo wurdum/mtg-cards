@@ -21,12 +21,8 @@
                     <ul class="nav">
                         <li class="brand">Cards</li>
                         <li class="divider-vertical"></li>
-                        <li {% if list %}class="active"{% endif %}>
-                            <a href="{{ url_for('cards', token=token, ltype='l') }}">List</a>
-                        </li>
-                        <li {% if table %}class="active"{% endif %}>
-                            <a href="{{ url_for('cards', token=token, ltype='t') }}">Table</a>
-                        </li>
+                        <li class="{{ repr|active_if('l') }}"><a href="{{ url_for('cards', token=token, repr='l', sort=sort, order=order) }}">List</a></li>
+                        <li class="{{ repr|active_if('t') }}"><a href="{{ url_for('cards', token=token, repr='t', sort=sort, order=order) }}">Table</a></li>
                     </ul>
                     <ul class="nav pull-right">
                         <li class="brand">List stats</li>
@@ -39,6 +35,14 @@
                 </div>
             </div>
         </div>
+        <ul class="nav nav-pills pull-right">
+            <li class="{{ sort|active_if('name') }}">
+                <a href="{{ url_for('cards', token=token, repr=repr, sort='name', order=request.args|get_new_order) }}">order by name</a>
+            </li>
+            <li class="{{ sort|active_if('price') }}">
+                <a href="{{ url_for('cards', token=token, repr=repr, sort='price', order=request.args|get_new_order) }}">order by low price</a>
+            </li>
+        </ul>
         {% block content %}{% endblock %}
     </div>
     <script>

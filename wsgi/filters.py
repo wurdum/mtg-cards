@@ -26,3 +26,29 @@ def price_float(card, prop):
     :return: price as float number
     """
     return float(card.prices.__dict__[prop][1:])
+
+
+def get_new_order(args):
+    """Return asc when order arg is None of desc and desc when order arg is asc
+
+    :param args: request args dics
+    :return: asc or desc
+    """
+    if 'order' not in args:
+        return 'desc'
+
+    return 'asc' if args['order'] == 'desc' else 'desc'
+
+
+def active_if(var, value, class_alone=True):
+    if var == value:
+        return 'active' if class_alone else ' active'
+    return ''
+
+
+def register(app):
+    app.add_template_filter(active_if)
+    app.add_template_filter(get_new_order)
+    app.add_template_filter(price)
+    app.add_template_filter(price_float)
+    app.add_template_filter(price_sum)
