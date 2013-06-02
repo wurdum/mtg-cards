@@ -17,15 +17,26 @@
     <div class="container-fluid content">
         <div class="navbar">
             <div class="navbar-inner">
-                <ul class="nav">
-                    <li class="brand">Cards</li>
-                    <li {% if list %}class="active"{% endif %}>
-                        <a href="{{ url_for('cards', token=token, ltype='l') }}">List</a>
-                    </li>
-                    <li {% if table %}class="active"{% endif %}>
-                        <a href="{{ url_for('cards', token=token, ltype='t') }}">Table</a>
-                    </li>
-                </ul>
+                <div class="container">
+                    <ul class="nav">
+                        <li class="brand">Cards</li>
+                        <li class="divider-vertical"></li>
+                        <li {% if list %}class="active"{% endif %}>
+                            <a href="{{ url_for('cards', token=token, ltype='l') }}">List</a>
+                        </li>
+                        <li {% if table %}class="active"{% endif %}>
+                            <a href="{{ url_for('cards', token=token, ltype='t') }}">Table</a>
+                        </li>
+                    </ul>
+                    <ul class="nav pull-right">
+                        <li class="brand">List stats</li>
+                        <li class="divider-vertical"></li>
+                        <li><span class="menu-item">total cards: <strong>{{ cards_num }}</strong></span></li>
+                        <li><span class="menu-item">low price: <strong>${{ sum_prices['low'] }}</strong></span></li>
+                        <li><span class="menu-item">mid price: <strong>${{ sum_prices['mid'] }}</strong></span></li>
+                        <li><span class="menu-item">high price: <strong>${{ sum_prices['high'] }}</strong></span></li>
+                    </ul>
+                </div>
             </div>
         </div>
         {% block content %}{% endblock %}

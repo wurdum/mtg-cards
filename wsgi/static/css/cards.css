@@ -13,3 +13,29 @@
     margin: 30px auto 0 auto;
     float: none;
 }
+
+ul.unstyled li.spread-text {
+    line-height: 25px;
+}
+
+.table td.text-middle {
+    vertical-align: middle;
+}
+
+.relative-container {
+    position: relative;
+}
+
+.relative-container .bottom {
+    position: absolute;
+    bottom: 0;
+}
+
+.navbar .nav > li > .menu-item {
+    float: none;
+    padding: 10px 15px 10px;
+    color: #777777;
+    text-decoration: none;
+    text-shadow: 0 1px 0 #ffffff;
+    display: block;
+}

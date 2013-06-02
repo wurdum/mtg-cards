@@ -1,4 +1,49 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<ul class="media-list">
+    {% for card in cards %}
+    <li class="media">
+        <a class="pull-left" href="#">
+            {% if card.info %}
+            <img class="media-object" src="{{ card.info.img_url }}" style="height: 270px">
+            {% endif %}
+        </a>
+        <div class="media-body relative-container" style="height: 270px;">
+            <blockquote style="height: 100%">
+                <h3 class="media-heading">
+                    <a href="{{ card.info.url if card.info else '#' }}">{{ card.name }} [{{ card.number }}]</a>
+                    {% if card.prices %}
+                        <small><a href="{{ card.prices.url }}">at TCGPlayer</a></small>
+                    {% endif %}
+                </h3>
+                <div class="media well well-small">
+                    {% if card.info %}
+                        <ul class="unstyled">
+                        {% for line in card.info.description %}
+                            <li class="spread-text">{{ line }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                {% if card.prices %}
+                <div class="media bottom">
+                    <table class="table table-bordered table-striped pull-right">
+                        <tr>
+                            <th>Low:</th>
+                            <td>{{ card.prices.low }}</td>
+                            <th>Mid:</th>
+                            <td>{{ card.prices.mid }}</td>
+                            <th>High:</th>
+                            <td>{{ card.prices.high }}</td>
+                        </tr>
+                    </table>
+                </div>
+                {% endif %}
+            </blockquote>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+
 {% endblock %}
