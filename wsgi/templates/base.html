@@ -15,6 +15,19 @@
 </head>
 <body>
     <div class="container-fluid content">
+        <div class="navbar">
+            <div class="navbar-inner">
+                <ul class="nav">
+                    <li class="brand">Cards</li>
+                    <li {% if list %}class="active"{% endif %}>
+                        <a href="{{ url_for('cards', token=token, ltype='l') }}">List</a>
+                    </li>
+                    <li {% if table %}class="active"{% endif %}>
+                        <a href="{{ url_for('cards', token=token, ltype='t') }}">Table</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
         {% block content %}{% endblock %}
     </div>
     <script>
