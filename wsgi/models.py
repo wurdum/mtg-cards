@@ -11,11 +11,11 @@ class Card(object):
 
     @property
     def has_info(self):
-        return self.info is None
+        return self.info is not None
 
     @property
     def has_prices(self):
-        return self.prices is None
+        return self.prices is not None
 
     def __repr__(self):
         return '%s x %d' % (self.name, self.number)
