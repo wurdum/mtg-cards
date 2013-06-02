@@ -4,10 +4,13 @@
 <ul class="media-list">
     {% for card in cards %}
     <li class="media">
-        <a class="pull-left" href="#">
+        {#<a class="pull-left" href="#">
             {% if card.info %}
             <img class="media-object" src="{{ card.info.img_url }}" style="height: 300px">
             {% endif %}
+        </a>#}
+        <a class="fancy-object pull-left" href="{{ card.info.img_url }}">
+            <img class="media-object" src="{{ card.info.img_url }}" style="height: 300px">
         </a>
         <div class="media-body relative-container" style="height: 300px;">
             <blockquote style="height: 100%">
@@ -45,5 +48,16 @@
     </li>
     {% endfor %}
 </ul>
+<script type="text/javascript">
+    $(function() {
+
+        $("a.fancy-object").fancybox({
+            openEffect: 'none',
+            helpers: { title : null },
+            padding: 3,
+            showNavArrows: false
+        });
+    });
+</script>
 
 {% endblock %}

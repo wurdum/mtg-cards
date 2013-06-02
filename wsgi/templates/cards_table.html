@@ -20,10 +20,10 @@
         <tr>
             <td class="text-center">{{ card.number }}</td>
             <td>
-                <p><a href="{{ card.info.url if card.info else '#' }}">{{ card.name }}</a></p>
-                {% if card.prices %}
-                <small><a href="{{ card.prices.url }}">at TCGPlayer</a></small>
-                {% endif %}
+                {% set anchor = card.name|urlencode %}
+                <p><a href="#{{ anchor }}" name="{{ anchor }}">{{ card.name }} [{{ card.number }}]</a></p>
+                {% if card.info %}<small><a href="{{ card.info.url }}">at Magiccards</a></small>{% endif %}<br/>
+                {% if card.prices %}<small><a href="{{ card.prices.url }}">at TCGPlayer</a></small>{% endif %}
             </td>
             <td>
                 <div class="well well-small">
