@@ -37,9 +37,9 @@
             {% if not card.prices %}
             <td colspan="3"></td>
             {% else %}
-            <td class="text-center text-middle">{{ card.prices.low }}</td>
-            <td class="text-center text-middle">{{ card.prices.mid }}</td>
-            <td class="text-center text-middle">{{ card.prices.high }}</td>
+            <td class="text-center text-middle">${{ card|price('low') }}</td>
+            <td class="text-center text-middle">${{ card|price('mid') }}</td>
+            <td class="text-center text-middle">${{ card|price('high') }}</td>
             {% endif %}
         </tr>
         {% endfor %}

@@ -31,10 +31,10 @@
                     <ul class="nav pull-right">
                         <li class="brand">List stats</li>
                         <li class="divider-vertical"></li>
-                        <li><span class="menu-item">total cards: <strong>{{ cards_num }}</strong></span></li>
-                        <li><span class="menu-item">low price: <strong>${{ sum_prices['low'] }}</strong></span></li>
-                        <li><span class="menu-item">mid price: <strong>${{ sum_prices['mid'] }}</strong></span></li>
-                        <li><span class="menu-item">high price: <strong>${{ sum_prices['high'] }}</strong></span></li>
+                        <li><span class="menu-item">total cards: <strong>{{ cards|sum(attribute='number') }}</strong></span></li>
+                        <li><span class="menu-item">low price: <strong>${{ cards|price_sum('low') }}</strong></span></li>
+                        <li><span class="menu-item">mid price: <strong>${{ cards|price_sum('mid') }}</strong></span></li>
+                        <li><span class="menu-item">high price: <strong>${{ cards|price_sum('high') }}</strong></span></li>
                     </ul>
                 </div>
             </div>

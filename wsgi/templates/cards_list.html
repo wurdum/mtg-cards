@@ -6,36 +6,36 @@
     <li class="media">
         <a class="pull-left" href="#">
             {% if card.info %}
-            <img class="media-object" src="{{ card.info.img_url }}" style="height: 270px">
+            <img class="media-object" src="{{ card.info.img_url }}" style="height: 300px">
             {% endif %}
         </a>
-        <div class="media-body relative-container" style="height: 270px;">
+        <div class="media-body relative-container" style="height: 300px;">
             <blockquote style="height: 100%">
                 <h3 class="media-heading">
-                    <a href="{{ card.info.url if card.info else '#' }}">{{ card.name }} [{{ card.number }}]</a>
-                    {% if card.prices %}
-                        <small><a href="{{ card.prices.url }}">at TCGPlayer</a></small>
-                    {% endif %}
+                    {% set anchor = card.name|urlencode %}
+                    <a href="#{{ anchor }}" name="{{ anchor }}">{{ card.name }} [{{ card.number }}]</a>
+                    {% if card.info %}<small><a href="{{ card.info.url }}">at Magiccards</a></small>{% endif %}
+                    {% if card.prices %}<small><a href="{{ card.prices.url }}">at TCGPlayer</a></small>{% endif %}
                 </h3>
+                {% if card.info %}
                 <div class="media well well-small">
-                    {% if card.info %}
-                        <ul class="unstyled">
-                        {% for line in card.info.description %}
-                            <li class="spread-text">{{ line }}</li>
-                        {% endfor %}
-                        </ul>
-                    {% endif %}
+                    <ul class="unstyled">
+                    {% for line in card.info.description %}
+                        <li class="spread-text">{{ line }}</li>
+                    {% endfor %}
+                    </ul>
                 </div>
+                {% endif %}
                 {% if card.prices %}
                 <div class="media bottom">
                     <table class="table table-bordered table-striped pull-right">
                         <tr>
                             <th>Low:</th>
-                            <td>{{ card.prices.low }}</td>
+                            <td>${{ card|price('low') }}</td>
                             <th>Mid:</th>
-                            <td>{{ card.prices.mid }}</td>
+                            <td>${{ card|price('mid') }}</td>
                             <th>High:</th>
-                            <td>{{ card.prices.high }}</td>
+                            <td>${{ card|price('high') }}</td>
                         </tr>
                     </table>
                 </div>

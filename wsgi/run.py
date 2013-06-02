@@ -2,9 +2,12 @@ from flask import Flask, render_template, request, url_for, redirect
 import ext
 import scraper
 import db
-import models
+import filters
 
 app = Flask(__name__)
+app.add_template_filter(filters.price)
+app.add_template_filter(filters.price_float)
+app.add_template_filter(filters.price_sum)
 
 
 @app.route("/", methods=['GET'])
@@ -40,10 +43,7 @@ def upload():
 @app.route('/<ltype>/<token>', methods=['GET'])
 def cards(token=None, ltype='l'):
     cards = db.get_cards(token)
-    templ_data = {'token': token, 'cards': cards, 'cards_num': sum([card.number for card in cards]),
-                  'sum_prices': {'low': models.calculate_sum(cards, 'low'),
-                                 'mid': models.calculate_sum(cards, 'mid'),
-                                 'high': models.calculate_sum(cards, 'high')}}
+    templ_data = {'token': token, 'cards': cards}
 
     if ltype == 't':
         templ_data['table'] = True
