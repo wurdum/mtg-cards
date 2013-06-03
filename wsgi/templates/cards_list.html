@@ -1,6 +1,5 @@
 {% extends 'cards_base.html' %}
-{% block content %}
-
+{% block cards_list %}
 <ul class="media-list">
     {% for card in cards %}
     <li class="media">
@@ -49,5 +48,4 @@
         });
     });
 </script>
-
 {% endblock %}

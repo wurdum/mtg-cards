@@ -1,56 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-responsive.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/prettify.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='js/fancybox/jquery.fancybox-1.3.4.css') }}">
-    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-1.10.0.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.file-input.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/prettify.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/fancybox/jquery.fancybox-1.3.4.js') }}"></script>
-</head>
-<body>
-    <div class="container-fluid content">
-        <div class="navbar">
-            <div class="navbar-inner">
-                <div class="container">
-                    <ul class="nav">
-                        <li class="brand">Cards</li>
-                        <li class="divider-vertical"></li>
-                        <li class="{{ repr|active_if('l') }}"><a href="{{ url_for('cards', token=token, repr='l', sort=sort, order=order) }}">List</a></li>
-                        <li class="{{ repr|active_if('t') }}"><a href="{{ url_for('cards', token=token, repr='t', sort=sort, order=order) }}">Table</a></li>
-                    </ul>
-                    <ul class="nav pull-right">
-                        <li class="brand">List stats</li>
-                        <li class="divider-vertical"></li>
-                        <li><span class="menu-item">total cards: <strong>{{ cards|sum(attribute='number') }}</strong></span></li>
-                        <li><span class="menu-item">low price: <strong>${{ cards|price_sum('low') }}</strong></span></li>
-                        <li><span class="menu-item">mid price: <strong>${{ cards|price_sum('mid') }}</strong></span></li>
-                        <li><span class="menu-item">high price: <strong>${{ cards|price_sum('high') }}</strong></span></li>
-                    </ul>
-                </div>
-            </div>
+{% extends 'base.html' %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='js/fancybox/jquery.fancybox-1.3.4.css') }}">
+<script type="text/javascript" src="{{ url_for('static', filename='js/fancybox/jquery.fancybox-1.3.4.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="navbar">
+    <div class="navbar-inner">
+        <div class="container">
+            <ul class="nav">
+                <li class="brand">Cards</li>
+                <li class="divider-vertical"></li>
+                <li class="{{ repr|active_if('l') }}"><a href="{{ url_for('cards', token=token, repr='l', sort=sort, order=order) }}">List</a></li>
+                <li class="{{ repr|active_if('t') }}"><a href="{{ url_for('cards', token=token, repr='t', sort=sort, order=order) }}">Table</a></li>
+            </ul>
+            <ul class="nav pull-right">
+                <li class="brand">List stats</li>
+                <li class="divider-vertical"></li>
+                <li><span class="menu-item">total cards: <strong>{{ cards|sum(attribute='number') }}</strong></span></li>
+                <li><span class="menu-item">low price: <strong>${{ cards|price_sum('low') }}</strong></span></li>
+                <li><span class="menu-item">mid price: <strong>${{ cards|price_sum('mid') }}</strong></span></li>
+                <li><span class="menu-item">high price: <strong>${{ cards|price_sum('high') }}</strong></span></li>
+            </ul>
         </div>
-        <ul class="nav nav-pills pull-right">
-            <li class="{{ sort|active_if('name') }}">
-                <a href="{{ url_for('cards', token=token, repr=repr, sort='name', order=request.args|get_new_order) }}">order by name</a>
-            </li>
-            <li class="{{ sort|active_if('price') }}">
-                <a href="{{ url_for('cards', token=token, repr=repr, sort='price', order=request.args|get_new_order) }}">order by low price</a>
-            </li>
-        </ul>
-        {% block content %}{% endblock %}
     </div>
-    <script>
-        $(function(){
-            window.prettyPrint && prettyPrint()
-        })
-    </script>
-</body>
-</html>
+</div>
+<ul class="nav nav-pills pull-right">
+    <li class="{{ sort|active_if('name') }}">
+        <a href="{{ url_for('cards', token=token, repr=repr, sort='name', order=request.args|get_new_order) }}">order by name</a>
+    </li>
+    <li class="{{ sort|active_if('price') }}">
+        <a href="{{ url_for('cards', token=token, repr=repr, sort='price', order=request.args|get_new_order) }}">order by low price</a>
+    </li>
+</ul>
+{% block cards_list %}{% endblock %}
+{% endblock %}
