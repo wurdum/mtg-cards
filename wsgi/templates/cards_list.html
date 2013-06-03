@@ -4,11 +4,6 @@
 <ul class="media-list">
     {% for card in cards %}
     <li class="media">
-        {#<a class="pull-left" href="#">
-            {% if card.info %}
-            <img class="media-object" src="{{ card.info.img_url }}" style="height: 300px">
-            {% endif %}
-        </a>#}
         <a class="fancy-object pull-left" href="{{ card.info.img_url }}">
             <img class="media-object" src="{{ card.info.img_url }}" style="height: 300px">
         </a>
@@ -17,10 +12,9 @@
                 <h3 class="media-heading">
                     {% set anchor = card.name|urlencode %}
                     <a href="#{{ anchor }}" name="{{ anchor }}">{{ card.name }} [{{ card.number }}]</a>
-                    {% if card.info %}<small><a href="{{ card.info.url }}">at Magiccards</a></small>{% endif %}
-                    {% if card.prices %}<small><a href="{{ card.prices.url }}">at TCGPlayer</a></small>{% endif %}
+                    <small><a href="{{ card.info.url }}">at Magiccards</a></small>
+                    <small><a href="{{ card.prices.url }}">at TCGPlayer</a></small>
                 </h3>
-                {% if card.info %}
                 <div class="media well well-small">
                     <ul class="unstyled">
                     {% for line in card.info.description %}
@@ -28,8 +22,6 @@
                     {% endfor %}
                     </ul>
                 </div>
-                {% endif %}
-                {% if card.prices %}
                 <div class="media bottom">
                     <table class="table table-bordered table-striped pull-right">
                         <tr>
@@ -42,7 +34,6 @@
                         </tr>
                     </table>
                 </div>
-                {% endif %}
             </blockquote>
         </div>
     </li>
@@ -50,7 +41,6 @@
 </ul>
 <script type="text/javascript">
     $(function() {
-
         $("a.fancy-object").fancybox({
             openEffect: 'none',
             helpers: { title : null },

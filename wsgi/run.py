@@ -19,13 +19,12 @@ def upload():
     if f:
         token = ext.get_token()
 
-        cards = []
         try:
             content = ext.read_file(f.stream)
             parser = scraper.MagiccardsScraper()
 
             cards = parser.process_cards(content)
-        except Exception, ex:
+        except:
             return redirect(url_for('error'))
         else:
             db.save_cards(token, cards)
@@ -40,7 +39,7 @@ def upload():
 
 @app.route('/<repr>/<token>', methods=['GET'])
 def cards(token=None, repr='l'):
-    cards = db.get_cards(token)
+    cards = filter(lambda c: c.has_info and c.has_prices, db.get_cards(token))
     sort = request.args.get('sort', 'name')
     order = request.args.get('order', 'asc')
     key_for_sort = lambda c: c.name if sort == 'name' else filters.price(c, 'low')

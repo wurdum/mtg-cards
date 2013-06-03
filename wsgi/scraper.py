@@ -20,18 +20,21 @@ class MagiccardsScraper(object):
         :return: list of models.Card
         """
         cards = []
-
         for c in content:
             page_url = self.MAGICCARDS_BASE_URL + self.MAGICCARDS_QUERY_TMPL % urllib2.quote(c[0])
-            page = urllib2.urlopen(page_url).read()
-            soup = BeautifulSoup(page, from_encoding='utf-8')
+            try:
+                page = urllib2.urlopen(page_url).read()
+                soup = BeautifulSoup(page, from_encoding='utf-8')
 
-            info = self._get_card_info(soup)
-            price = self._get_prices(soup)
+                info = self._get_card_info(soup)
+                price = self._get_prices(soup)
 
-            card_info = models.CardInfo(**info)
-            card_prices = models.CardPrices(**price)
-            card = models.Card(c[0], int(c[1]), info=card_info, prices=card_prices)
+                card_info = models.CardInfo(**info)
+                card_prices = models.CardPrices(**price)
+            except:
+                card = models.Card(c[0], int(c[1]))
+            else:
+                card = models.Card(c[0], int(c[1]), info=card_info, prices=card_prices)
 
             cards.append(card)
 

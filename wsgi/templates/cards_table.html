@@ -22,25 +22,19 @@
             <td>
                 {% set anchor = card.name|urlencode %}
                 <p><a href="#{{ anchor }}" name="{{ anchor }}">{{ card.name }} [{{ card.number }}]</a></p>
-                {% if card.info %}<small><a href="{{ card.info.url }}">at Magiccards</a></small>{% endif %}<br/>
-                {% if card.prices %}<small><a href="{{ card.prices.url }}">at TCGPlayer</a></small>{% endif %}
+                <small><a href="{{ card.info.url }}">at Magiccards</a></small><br/>
+                <small><a href="{{ card.prices.url }}">at TCGPlayer</a></small>
             </td>
             <td>
                 <div class="well well-small">
-                    {% if card.info %}
-                        {% for line in card.info.description %}
-                            <small>{{ line }}</small><br/>
-                        {% endfor %}
-                    {% endif %}
+                    {% for line in card.info.description %}
+                        <small>{{ line }}</small><br/>
+                    {% endfor %}
                 </div>
             </td>
-            {% if not card.prices %}
-            <td colspan="3"></td>
-            {% else %}
             <td class="text-center text-middle">${{ card|price('low') }}</td>
             <td class="text-center text-middle">${{ card|price('mid') }}</td>
             <td class="text-center text-middle">${{ card|price('high') }}</td>
-            {% endif %}
         </tr>
         {% endfor %}
     </tbody>
