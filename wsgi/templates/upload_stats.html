@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-responsive.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-1.10.0.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.file-input.js') }}"></script>
+</head>
+<body>
+    <div class="container-fluid content">
+        <div class="alert alert-block">
+            <h3>Warning!</h3>
+            <p class="lead">Some of cards in uploaded list was not found in magiccards database,
+                continue without these cards or you will try to fix list and reupload it?</p>
+        </div>
+        <form action="{{ url_for('delete') }}" method="post">
+            <div class="top-bottom-margin">
+                <a href="{{ url_for('cards', token=token) }}" class="btn btn-primary pull-right">Continue</a>
+                <input type="hidden" name="token" value="{{ token }}">
+                <input class="btn btn-danger pull-left" type="submit" value="Go back">
+                <div class="clearfix"></div>
+            </div>
+        </form>
+        <table class="table table-bordered table.striped">
+            <thead>
+                <tr>
+                    <th>number</th>
+                    <th>name</th>
+                    <th>status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for card in cards %}
+                {% set is_found = card.has_info and card.has_prices %}
+                <tr class="{% if is_found %}success{% else %}error{% endif %}">
+                    <td class="text-center text-middle">{{ card.number }}</td>
+                    <td class="text-middle"><a href="#{{ anchor }}" name="{{ anchor }}">{{ card.name }} [{{ card.number }}]</a></td>
+                    <td>
+                        {% if is_found %}
+                            {% if card.has_info %}<small><a href="{{ card.info.url }}">at Magiccards</a></small><br/>{% endif %}
+                            {% if card.has_prices %}<small><a href="{{ card.prices.url }}">at TCGPlayer</a></small>{% endif %}
+                        {% else %}
+                            unknown
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

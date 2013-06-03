@@ -40,6 +40,17 @@ def get_cards(token):
     return cards
 
 
+def delete_cards(token):
+    """Removes cards list with specified token
+
+    :param token: token using which will be found cards list that will be deleted
+    """
+    connection = pymongo.MongoClient(MONGO_URL)
+    db = connection[DB]
+
+    db.list.remove({'token': token})
+
+
 def todict(obj, classkey=None):
     """
     Converts object graph to dict structures

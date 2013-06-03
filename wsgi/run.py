@@ -10,7 +10,7 @@ filters.register(app)
 
 @app.route("/", methods=['GET'])
 def index():
-    return render_template('load.html')
+    return render_template('upload.html')
 
 
 @app.route('/', methods=['POST'])
@@ -34,11 +34,12 @@ def upload():
 
             return redirect(url_for('cards', token=token, repr='l'))
 
-    return render_template('load.html', has_error=True)
+    return render_template('upload.html', has_error=True)
 
 
+@app.route('/l/<token>', defaults={'repr': 'l'}, methods=['GET'])
 @app.route('/<repr>/<token>', methods=['GET'])
-def cards(token=None, repr='l'):
+def cards(token, repr):
     cards = filter(lambda c: c.has_info and c.has_prices, db.get_cards(token))
     sort = request.args.get('sort', 'name')
     order = request.args.get('order', 'asc')
@@ -56,8 +57,18 @@ def cards(token=None, repr='l'):
 
 
 @app.route('/s/<token>', methods=['GET'])
-def stats(token=None):
-    return token
+def stats(token):
+    cards = db.get_cards(token)
+    return render_template('upload_stats.html', token=token, cards=cards)
+
+
+@app.route('/delete', methods=['POST'])
+def delete():
+    if 'token' in request.form:
+        token = request.form['token']
+        db.delete_cards(token)
+
+    return redirect(url_for('index'))
 
 
 @app.route('/err')
