@@ -10,7 +10,7 @@ filters.register(app)
 
 @app.route("/", methods=['GET'])
 def index():
-    return render_template('upload.html')
+    return render_template('upload.html', cards_lists=db.get_last_cards_lists())
 
 
 @app.route('/', methods=['POST'])

@@ -1007,7 +1007,7 @@ pre {
 }
 
 pre.prettyprint {
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 pre code {

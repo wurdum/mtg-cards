@@ -49,3 +49,14 @@ class CardPrices(object):
 
     def __repr__(self):
         return "%s: l[%s] m[%s] h[%s]" % (self.url, self.low, self.mid, self.high)
+
+
+class CardsList(object):
+    """
+    Represents cards list with summary info
+    """
+
+    def __init__(self, token, cards_num, price):
+        self.token = token
+        self.cards_num = cards_num
+        self.price = price
