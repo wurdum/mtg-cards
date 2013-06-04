@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="center-box text-center">
+    <img src="{{ url_for('static', filename='img/error.jpg') }}">
+    <p class="lead">Congratulations, you broke the application. Please, try not to repeat it :)</p>
+</div>
+{% endblock %}
