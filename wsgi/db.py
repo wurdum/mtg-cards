@@ -22,7 +22,7 @@ def get_unique_token():
             return token
 
 
-def get_cards(token):
+def get_cards(token, only_resolved=False):
     """Searches cards list by token
 
     :return: list of models.Card objects
@@ -34,7 +34,9 @@ def get_cards(token):
     if not dict_obj:
         return []
 
-    return [tocard(dc) for dc in dict_obj['cards']]
+    cards = [tocard(dc) for dc in dict_obj['cards']]
+
+    return filter(lambda c: c.has_info and c.has_prices, cards) if only_resolved else cards
 
 
 def get_last_cards_lists():

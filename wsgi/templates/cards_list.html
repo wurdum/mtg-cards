@@ -1,5 +1,6 @@
 {% extends 'cards_base.html' %}
 {% block cards_list %}
+{% include 'cards_sort_ops.html' %}
 <ul class="media-list">
     {% for card in cards %}
     <li class="media">

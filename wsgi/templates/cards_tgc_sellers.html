@@ -1,0 +1,32 @@
+{% extends 'cards_base.html' %}
+{% block cards_list %}
+<div class="accordion" id="sellersacc">
+    {% set first = True %}
+    {% for seller in sellers %}
+    {% set anchor = seller.name|idfy %}
+    <div class="accordion-group">
+        <div class="accordion-heading">
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#sellersacc" href="#{{ anchor }}">
+                {{ seller.name }}
+            </a>
+        </div>
+        <div id="{{ anchor }}" class="accordion-body collapse{% if first %} in{% set first = False %}{% endif %}">
+            <div class="accordion-inner">
+                <table class="table table-bordered table-striped">
+                    <tbody>
+                        {% for card in seller.cards %}
+                        <tr>
+                            <td>{{ card['card'].name }}</td>
+                            <td>{{ card['card'].number }}</td>
+                            <td>{{ card.number }}</td>
+                            <td>{{ card.price }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

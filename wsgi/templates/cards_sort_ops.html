@@ -1,0 +1,8 @@
+<ul class="nav nav-pills pull-right">
+    <li class="{{ sort|active_if('name') }}">
+        <a href="{{ url_for('cards', token=token, repr=repr, sort='name', order=request.args|get_new_order) }}">order by name</a>
+    </li>
+    <li class="{{ sort|active_if('price') }}">
+        <a href="{{ url_for('cards', token=token, repr=repr, sort='price', order=request.args|get_new_order) }}">order by low price</a>
+    </li>
+</ul>

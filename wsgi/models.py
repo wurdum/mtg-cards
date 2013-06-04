@@ -1,3 +1,6 @@
+import ext
+
+
 class Card(object):
     """
     Card model with info and prices
@@ -60,3 +63,52 @@ class CardsList(object):
         self.token = token
         self.cards_num = cards_num
         self.price = price
+
+
+class TCGCardSeller(object):
+    """
+    Represents tcg seller for specific card
+    """
+
+    def __init__(self, sid, name, number, price):
+        self.sid = sid
+        self.name = name
+        self.number = number
+        self.price = price
+
+    def __repr__(self):
+        return self.name + ' ' + self.sid
+
+
+class TCGSeller(object):
+    """
+    Represents seller that has several cards
+    """
+
+    def __init__(self, name):
+        self.name = name
+        self._cards = []
+
+    @property
+    def cards(self):
+        return self._cards
+
+    def add_card(self, card, number, price):
+        self._cards.append({'card': card, 'number': number, 'price': price})
+
+    def get_available_cards_num(self, cards):
+        """Returns number of cards that could be bought from this seller
+
+        :param cards: list of models.Card objects
+        :return: number as int
+        """
+        available = 0
+        for card in cards:
+            available_card = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
+            if available_card is not None:
+                available += card.number if available_card['number'] >= card.number else available_card['number']
+
+        return available
+
+    def __repr__(self):
+        return self.name + ' ' + len(self._cards)

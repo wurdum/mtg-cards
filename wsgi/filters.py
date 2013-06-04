@@ -1,3 +1,6 @@
+import random
+
+
 def price(card, prop):
     """Returns card price considering cards number
 
@@ -46,7 +49,28 @@ def active_if(var, value, class_alone=True):
     return ''
 
 
+def idfy(value):
+    """Clears input value from symbols that are invalid for html id
+
+    :param value: input string
+    :return: cleaned string
+    """
+    result = ''
+    chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
+    if value[0] not in chars[:-2]:
+        result = 'a'
+
+    for ch in value:
+        if ch not in chars:
+            result += '_' + random.choice(chars)
+        else:
+            result += ch
+
+    return result
+
+
 def register(app):
+    app.add_template_filter(idfy)
     app.add_template_filter(active_if)
     app.add_template_filter(get_new_order)
     app.add_template_filter(price)

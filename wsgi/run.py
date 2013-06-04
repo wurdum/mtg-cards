@@ -3,6 +3,7 @@ import ext
 import scraper
 import db
 import filters
+import models
 
 app = Flask(__name__)
 filters.register(app)
@@ -37,10 +38,10 @@ def upload():
     return render_template('upload.html', has_error=True)
 
 
-@app.route('/l/<token>', defaults={'repr': 'l'}, methods=['GET'])
-@app.route('/<repr>/<token>', methods=['GET'])
+@app.route('/<token>/l', defaults={'repr': 'l'}, methods=['GET'])
+@app.route('/<token>/<repr>', methods=['GET'])
 def cards(token, repr):
-    cards = filter(lambda c: c.has_info and c.has_prices, db.get_cards(token))
+    cards = db.get_cards(token, only_resolved=True)
     sort = request.args.get('sort', 'name')
     order = request.args.get('order', 'asc')
     key_for_sort = lambda c: c.name if sort == 'name' else filters.price(c, 'low')
@@ -56,10 +57,30 @@ def cards(token, repr):
         return render_template('error.html')
 
 
-@app.route('/s/<token>', methods=['GET'])
+@app.route('/<token>/s', methods=['GET'])
 def stats(token):
     cards = db.get_cards(token)
     return render_template('upload_stats.html', token=token, cards=cards)
+
+
+@app.route('/<token>/shop/tcg')
+def tcg(token):
+    cards = db.get_cards(token, only_resolved=True)
+
+    unique_sellers = {}
+    for card in cards:
+        tcg_scrapper = scraper.TCGPlayerScrapper(card.prices.sid)
+        card_sellers = tcg_scrapper.get_full_info()
+        for seller in card_sellers:
+            if seller.name not in unique_sellers:
+                unique_sellers[seller.name] = models.TCGSeller(seller.name)
+
+            unique_sellers[seller.name].add_card(card, seller.number, seller.price)
+
+    sellers = sorted([v for k, v in unique_sellers.items()],
+                     key=lambda s: s.get_available_cards_num(cards), reverse=True)
+
+    return render_template('cards_tgc_sellers.html', sellers=sellers, cards=cards)
 
 
 @app.route('/delete', methods=['POST'])
@@ -76,7 +97,7 @@ def delete():
 @app.errorhandler(404)
 @app.errorhandler(410)
 @app.errorhandler(500)
-def error():
+def error(e=None):
     return render_template('error.html')
 
 

@@ -1,3 +1,4 @@
+import re
 import urllib2
 import urlparse
 from bs4 import BeautifulSoup
@@ -5,7 +6,9 @@ import models
 
 
 class MagiccardsScraper(object):
-    """Parses cards info using www.magiccards.info resource"""
+    """
+    Parses cards info using www.magiccards.info resource
+    """
 
     MAGICCARDS_BASE_URL = 'http://magiccards.info/'
     MAGICCARDS_QUERY_TMPL = 'query?q=!%s&v=card&s=cname'
@@ -21,6 +24,15 @@ class MagiccardsScraper(object):
         """
         cards = []
         for c in content:
+            has_duplicate = False
+            for pc in cards:
+                if pc.name == c[0]:
+                    pc.number += int(c[1]) if int(c[1]) > 1 else 1
+                    has_duplicate = True
+
+            if has_duplicate:
+                continue
+
             page_url = self.MAGICCARDS_BASE_URL + self.MAGICCARDS_QUERY_TMPL % urllib2.quote(c[0])
             try:
                 page = urllib2.urlopen(page_url).read()
@@ -98,7 +110,10 @@ class TCGPlayerScrapper(object):
     """
 
     BRIEF_BASE_URL = 'http://partner.tcgplayer.com/x3/mchl.ashx?pk=MAGCINFO&sid='
-    FULL_BASE_URL = 'http://partner.tcgplayer.com/x3/mcpl.ashx?pk=MAGCINFO&sid='
+    FULL_BASE_URL = 'http://store.tcgplayer.com/productcatalog/product/getpricetable' \
+                    '?captureFeaturedSellerData=True&pageSize=50&productId='
+    FULL_URL_COOKIE = ('Cookie', 'SearchCriteria=WantGoldStar=False&MinRating=0&MinSales='
+                                 '&magic_MinQuantity=1&GameName=Magic')
 
     def __init__(self, sid):
         self.sid = sid
@@ -118,8 +133,8 @@ class TCGPlayerScrapper(object):
         return self.FULL_BASE_URL + self.sid
 
     def get_brief_info(self):
-        """
-        Parses summary price info for card
+        """Parses summary price info for card
+
         :return: dictionary {sid, tcg card url, low, mid, high}
         """
         tcg_response = urllib2.urlopen(self.brief_url).read()
@@ -134,6 +149,45 @@ class TCGPlayerScrapper(object):
                   'high': str(tcg_soup.find('td', class_='TCGPHiLoHigh').contents[1].contents[0])}
 
         return prices
+
+    def get_full_info(self):
+        """Parses sellers info for card
+
+        :return: list of models.TCGSeller objects
+        """
+        opener = urllib2.build_opener()
+        opener.addheaders.append(self.FULL_URL_COOKIE)
+
+        sellers = []
+        link = self.full_url
+        while True:
+            tcg_response = opener.open(link).read()
+            soup = BeautifulSoup(tcg_response)
+
+            sellers_blocks = soup.find('table', class_='priceTable').find_all('tr', class_='vendor')
+            for block in sellers_blocks:
+                name = block.find('td', class_='seller').find_all('a')[0].text.strip()
+                number = int(block.find('td', class_='quantity').text.strip())
+                price = str(block.find('td', class_='price').contents[0]).strip()
+
+                seller = models.TCGCardSeller(self.sid, name, number, price)
+                sellers.append(seller)
+
+            pager_block = soup.find('div', class_='pricePager')
+            next_link_tag = pager_block.find('a', text=re.compile(r'Next'))
+            if 'disabled' in next_link_tag.attrs:
+                break
+
+            link = self._get_domain(self.full_url) + next_link_tag['href']
+
+        return sellers
+
+    def _get_domain(self, url):
+        """
+        Removes path part of url
+        """
+        decomposed = urlparse.urlparse(url)
+        return decomposed.scheme + '://' + decomposed.hostname
 
     def _clear_url_from_partner(self, url):
         """

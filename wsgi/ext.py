@@ -7,6 +7,17 @@ def get_token(size=6, chars=string.ascii_lowercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 
 
+def get_first(iterable, func, default=None):
+    """
+    Returns first element that satisfy condition
+    """
+    for item in iterable:
+        if func(item):
+            return item
+
+    return default
+
+
 def parse_card(line):
     """parse_card(line) -> (string, string)
 
