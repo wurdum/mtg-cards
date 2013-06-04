@@ -17,7 +17,7 @@ def index():
 def upload():
     f = request.files['cards_list']
     if f:
-        token = ext.get_token()
+        token = db.get_unique_token()
 
         try:
             content = ext.read_file(f.stream)

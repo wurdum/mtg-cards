@@ -2,9 +2,24 @@ import os
 import pymongo
 import models
 import filters
+import ext
 
 MONGO_URL = os.environ.get('OPENSHIFT_MONGODB_DB_URL', 'localhost')
 DB = os.environ.get('OPENSHIFT_APP_NAME', 'cards')
+
+
+def get_unique_token():
+    """Generates unique token
+
+    :return: string token
+    """
+    connection = pymongo.MongoClient(MONGO_URL)
+    db = connection[DB]
+
+    while True:
+        token = ext.get_token()
+        if db.list.find_one({'token': token}) is None:
+            return token
 
 
 def get_cards(token):
@@ -41,8 +56,6 @@ def get_last_cards_lists():
         cards_lists.append(cards_list)
 
     return cards_lists
-
-
 
 
 def save_cards(token, cards):
