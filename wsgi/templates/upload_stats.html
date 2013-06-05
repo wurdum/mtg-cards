@@ -24,6 +24,7 @@
     <tbody>
         {% for card in cards %}
         {% set is_found = card.has_info and card.has_prices %}
+        {% set anchor = card.name|urlencode %}
         <tr class="{% if is_found %}success{% else %}error{% endif %}">
             <td class="text-center text-middle">{{ card.number }}</td>
             <td class="text-middle"><a href="#{{ anchor }}" name="{{ anchor }}">{{ card.name }} [{{ card.number }}]</a></td>

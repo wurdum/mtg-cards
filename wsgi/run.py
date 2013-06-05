@@ -22,9 +22,7 @@ def upload():
 
         try:
             content = ext.read_file(f.stream)
-            parser = scraper.MagiccardsScraper()
-
-            cards = parser.process_cards(content)
+            cards = scraper.resolve_cards(content)
         except:
             return redirect(url_for('error'))
         else:

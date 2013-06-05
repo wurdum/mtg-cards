@@ -1,8 +1,19 @@
 import re
-import urllib2
 import urlparse
+import eventlet
+from eventlet.green import urllib2
 from bs4 import BeautifulSoup
 import models
+
+
+def resolve_cards(content):
+    """Parses card info using MagiccardScrapper in thread for request mode
+
+    :param content: list of (card_name, card_number) tuples
+    :return: list of models.Card objects
+    """
+    pool = eventlet.GreenPool(len(content))
+    return [card for card in pool.imap(MagiccardsScraper.resolve_card, content)]
 
 
 class MagiccardsScraper(object):
@@ -13,44 +24,40 @@ class MagiccardsScraper(object):
     MAGICCARDS_BASE_URL = 'http://magiccards.info/'
     MAGICCARDS_QUERY_TMPL = 'query?q=!%s&v=card&s=cname'
 
-    def __init__(self):
-        super(MagiccardsScraper, self).__init__()
+    def __init__(self, name, number):
+        self.name = name
+        self.number = number
 
-    def process_cards(self, content):
-        """Foreach card parses data from www.magiccards.info.
+    @staticmethod
+    def resolve_card(content_record):
+        """Parses card info
 
-        :param content: list of tuples (card name, card number)
-        :return: list of models.Card
+        :param content_record: (card_name, card_number) tuple
+        :return: models.Card object
         """
-        cards = []
-        for c in content:
-            has_duplicate = False
-            for pc in cards:
-                if pc.name == c[0]:
-                    pc.number += int(c[1]) if int(c[1]) > 1 else 1
-                    has_duplicate = True
+        scrapper = MagiccardsScraper(content_record[0], content_record[1])
+        return scrapper.get_card()
 
-            if has_duplicate:
-                continue
+    def get_card(self):
+        """Parses card info, if no info returns card object without info and prices
 
-            page_url = self.MAGICCARDS_BASE_URL + self.MAGICCARDS_QUERY_TMPL % urllib2.quote(c[0])
-            try:
-                page = urllib2.urlopen(page_url).read()
-                soup = BeautifulSoup(page, from_encoding='utf-8')
+        :return: models.Card object
+        """
+        page_url = self.MAGICCARDS_BASE_URL + self.MAGICCARDS_QUERY_TMPL % urllib2.quote(self.name)
 
-                info = self._get_card_info(soup)
-                price = self._get_prices(soup)
+        try:
+            page = urllib2.urlopen(page_url).read()
+            soup = BeautifulSoup(page, from_encoding='utf-8')
 
-                card_info = models.CardInfo(**info)
-                card_prices = models.CardPrices(**price)
-            except:
-                card = models.Card(c[0], int(c[1]))
-            else:
-                card = models.Card(c[0], int(c[1]), info=card_info, prices=card_prices)
+            info = self._get_card_info(soup)
+            price = self._get_prices(soup)
 
-            cards.append(card)
-
-        return cards
+            card_info = models.CardInfo(**info)
+            card_prices = models.CardPrices(**price)
+        except:
+            return models.Card(self.name, int(self.number))
+        else:
+            return models.Card(self.name, int(self.number), info=card_info, prices=card_prices)
 
     def _get_card_info(self, soup):
         """Parses soup page and returns dict with card info
@@ -69,7 +76,7 @@ class MagiccardsScraper(object):
         :param table: info table at www.magiccards.info
         :return: url of the page with card
         """
-        return urlparse.urljoin(self.MAGICCARDS_BASE_URL, table.find_all('a')[0]['href'])
+        return urlparse.urljoin(MagiccardsScraper.MAGICCARDS_BASE_URL, table.find_all('a')[0]['href'])
 
     def _get_img_url(self, table):
         """Parses info table
