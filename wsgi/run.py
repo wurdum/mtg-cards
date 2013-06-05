@@ -3,7 +3,6 @@ import ext
 import scraper
 import db
 import filters
-import models
 
 app = Flask(__name__)
 filters.register(app)
@@ -40,8 +39,8 @@ def upload():
 @app.route('/<token>/<repr>', methods=['GET'])
 def cards(token, repr):
     cards = db.get_cards(token, only_resolved=True)
-    sort = request.args.get('sort', 'name')
-    order = request.args.get('order', 'asc')
+    sort = request.args.get('sort', 'name') if request.args.get('sort', 'name') else 'name'
+    order = request.args.get('order', 'asc') if request.args.get('order', 'asc') else 'asc'
     key_for_sort = lambda c: c.name if sort == 'name' else filters.price(c, 'low')
 
     templ_data = {'token': token, 'cards': sorted(cards, key=key_for_sort, reverse=order == 'desc'),
@@ -66,7 +65,7 @@ def tcg(token):
     cards = db.get_cards(token, only_resolved=True)
     sellers = scraper.get_tcg_sellers_async(cards)
 
-    return render_template('cards_tgc_sellers.html', sellers=sellers, cards=cards)
+    return render_template('cards_tgc_sellers.html', sellers=sellers, cards=cards, token=token)
 
 
 @app.route('/delete', methods=['POST'])
