@@ -1,6 +1,7 @@
 import random
 import string
 import cStringIO
+import urlparse
 
 
 def get_token(size=6, chars=string.ascii_lowercase + string.digits):
@@ -16,6 +17,48 @@ def get_first(iterable, func, default=None):
             return item
 
     return default
+
+
+def result_or_default(func, default=None):
+    """Returns result of func execution or default value
+
+    :param func: function to execute
+    :return: result of func ot default value
+    """
+    try:
+        return func()
+    except:
+        return default
+
+
+def get_domain(url):
+    """
+    Returns hostname with scheme
+    """
+    decomposed = urlparse.urlparse(url)
+    return decomposed.scheme + '://' + decomposed.hostname
+
+
+def get_domain_with_path(url):
+    """
+    Returns hostname with scheme and path
+    """
+    decomposed = urlparse.urlparse(url)
+    return decomposed.scheme + '://' + decomposed.hostname + decomposed.path
+
+
+def get_query_string_params(url):
+    """
+    Returns dict of query string parameters
+    """
+    return dict([(k, v[0]) for k, v in urlparse.parse_qs(urlparse.urlparse(url).query).items()])
+
+
+def url_join(base, url):
+    """
+    Joins 2 parts of url
+    """
+    return urlparse.urljoin(base, url)
 
 
 def parse_card(line):

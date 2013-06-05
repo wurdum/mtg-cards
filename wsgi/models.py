@@ -65,7 +65,7 @@ class CardsList(object):
         self.price = price
 
 
-class TCGCardSeller(object):
+class TCGCardOffer(object):
     """
     Represents tcg seller for specific card
     """

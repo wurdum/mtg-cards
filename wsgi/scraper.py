@@ -1,10 +1,10 @@
 import re
 import itertools
-import urlparse
 import eventlet
 from eventlet.green import urllib2
 from bs4 import BeautifulSoup
 import models
+import ext
 
 
 def resolve_cards_async(content):
@@ -25,14 +25,14 @@ def get_tcg_sellers_async(cards):
     """
     unique_sellers = {}
     pool = eventlet.GreenPool(len(cards))
-    for card, sellers_groups in pool.imap(get_tcg_card_sellers, cards):
-        for sellers_group in sellers_groups:
-            if sellers_group[0].name not in unique_sellers:
-                unique_sellers[sellers_group[0].name] = models.TCGSeller(sellers_group[0].name, sellers_group[0].url,
-                                                                         sellers_group[0].rating, sellers_group[0].sales)
+    for card, offers in pool.imap(get_tcg_card_offers, cards):
+        for offer in offers:
+            seller_name = offer['seller']['name']
+            if seller_name not in unique_sellers:
+                unique_sellers[seller_name] = models.TCGSeller(**offer['seller'])
 
-            for seller in sellers_group:
-                unique_sellers[seller.name].add_card(card, seller.condition, seller.number, seller.price)
+            for record in offer['offers']:
+                unique_sellers[seller_name].add_card(card, record.condition, record.number, record.price)
 
     sellers = [v for k, v in unique_sellers.items()]
     sellers = filter(lambda s: s.has_all_cards(cards), sellers)
@@ -41,7 +41,7 @@ def get_tcg_sellers_async(cards):
     return sellers
 
 
-def get_tcg_card_sellers(card):
+def get_tcg_card_offers(card):
     """Parses TCGPlayer sellers list for specified card
 
     :param card: models.Card object
@@ -111,7 +111,7 @@ class MagiccardsScraper(object):
         :param table: info table at www.magiccards.info
         :return: url of the page with card
         """
-        return urlparse.urljoin(MagiccardsScraper.MAGICCARDS_BASE_URL, table.find_all('a')[0]['href'])
+        return ext.url_join(MagiccardsScraper.MAGICCARDS_BASE_URL, table.find_all('a')[0]['href'])
 
     def _get_img_url(self, table):
         """Parses info table
@@ -139,7 +139,7 @@ class MagiccardsScraper(object):
         """
         content_table = magic_soup.find_all('table')[3]
         request_url = content_table.find_all('script')[0]['src']
-        sid = urlparse.parse_qs(urlparse.urlparse(request_url).query)['sid'][0]
+        sid = ext.get_query_string_params(request_url)['sid']
 
         tcg_scrapper = TCGPlayerScrapper(sid)
 
@@ -185,7 +185,7 @@ class TCGPlayerScrapper(object):
         tcg_soup = BeautifulSoup(html_response)
 
         prices = {'sid': self.sid,
-                  'url': self._clear_url_from_partner(tcg_soup.find('td', class_='TCGPHiLoLink').contents[0]['href']),
+                  'url': ext.get_domain_with_path(tcg_soup.find('td', class_='TCGPHiLoLink').contents[0]['href']),
                   'low': str(tcg_soup.find('td', class_='TCGPHiLoLow').contents[1].contents[0]),
                   'mid': str(tcg_soup.find('td', class_='TCGPHiLoMid').contents[1].contents[0]),
                   'high': str(tcg_soup.find('td', class_='TCGPHiLoHigh').contents[1].contents[0])}
@@ -193,60 +193,42 @@ class TCGPlayerScrapper(object):
         return prices
 
     def get_full_info(self):
-        """Parses sellers info for card
+        """Parses offers info for card
 
         :return: list of models.TCGSeller objects
         """
         opener = urllib2.build_opener()
         opener.addheaders.append(self.FULL_URL_COOKIE)
 
-        sellers = []
+        offers = []
         link = self.full_url
         while True:
             tcg_response = opener.open(link).read()
             soup = BeautifulSoup(tcg_response)
 
-            sellers_blocks = soup.find('table', class_='priceTable').find_all('tr', class_='vendor')
-            for block in sellers_blocks:
-                seller_td = block.find('td', class_='seller')
-                name = seller_td.find_all('a')[0].text.strip()
-                url = self._get_domain(self.full_url) + seller_td.find_all('a')[0]['href']
-                rating = str(seller_td.find('span', class_='actualRating').find('a').contents[0]).strip().split()[1]
-                sales = self._value_or_empty(lambda: str(seller_td.find('span', class_='ratingHeading').find('a').contents[0]).strip())
+            offers_block = soup.find('table', class_='priceTable').find_all('tr', class_='vendor')
+            for block in offers_block:
+                offer_td = block.find('td', class_='seller')
+                name = offer_td.find_all('a')[0].text.strip()
+                url = ext.get_domain(self.full_url) + offer_td.find_all('a')[0]['href']
+                rating = str(offer_td.find('span', class_='actualRating').find('a').contents[0]).strip().split()[1]
+                sales = ext.result_or_default(
+                    lambda: str(offer_td.find('span', class_='ratingHeading').find('a').contents[0]).strip(),
+                    default='')
                 number = int(block.find('td', class_='quantity').text.strip())
                 price = str(block.find('td', class_='price').contents[0]).strip()
                 condition = str(block.find('td', class_='condition').find('a').contents[0]).strip()
 
-                seller = models.TCGCardSeller(self.sid, name, url, rating, sales, number, price, condition)
-                sellers.append(seller)
+                offers.append(models.TCGCardOffer(self.sid, name, url, rating, sales, number, price, condition))
 
             pager_block = soup.find('div', class_='pricePager')
             next_link_tag = pager_block.find('a', text=re.compile(r'Next'))
             if 'disabled' in next_link_tag.attrs:
                 break
 
-            link = self._get_domain(self.full_url) + next_link_tag['href']
+            link = ext.get_domain(self.full_url) + next_link_tag['href']
 
-        grouped_sellers = [list(g) for k, g in itertools.groupby(sellers, key=lambda s: s.name)]
+        group_key = lambda s: {'name': s.name, 'url': s.url, 'rating': s.rating, 'sales': s.sales}
+        grouped_offers = [{'seller': k, 'offers': list(g)} for k, g in itertools.groupby(offers, key=group_key)]
 
-        return grouped_sellers
-
-    def _value_or_empty(self, func):
-        try:
-            return func()
-        except:
-            return ''
-
-    def _get_domain(self, url):
-        """
-        Removes path part of url
-        """
-        decomposed = urlparse.urlparse(url)
-        return decomposed.scheme + '://' + decomposed.hostname
-
-    def _clear_url_from_partner(self, url):
-        """
-        Removes from url magiccard partner info
-        """
-        decomposed = urlparse.urlparse(url)
-        return decomposed.scheme + '://' + decomposed.hostname + decomposed.path
+        return grouped_offers
