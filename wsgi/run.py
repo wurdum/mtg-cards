@@ -22,7 +22,7 @@ def upload():
 
         try:
             content = ext.read_file(f.stream)
-            cards = scraper.resolve_cards(content)
+            cards = scraper.resolve_cards_async(content)
         except:
             return redirect(url_for('error'))
         else:
@@ -64,19 +64,7 @@ def stats(token):
 @app.route('/<token>/shop/tcg')
 def tcg(token):
     cards = db.get_cards(token, only_resolved=True)
-
-    unique_sellers = {}
-    for card in cards:
-        tcg_scrapper = scraper.TCGPlayerScrapper(card.prices.sid)
-        card_sellers = tcg_scrapper.get_full_info()
-        for seller in card_sellers:
-            if seller.name not in unique_sellers:
-                unique_sellers[seller.name] = models.TCGSeller(seller.name)
-
-            unique_sellers[seller.name].add_card(card, seller.number, seller.price)
-
-    sellers = sorted([v for k, v in unique_sellers.items()],
-                     key=lambda s: s.get_available_cards_num(cards), reverse=True)
+    sellers = scraper.get_tcg_sellers_async(cards)
 
     return render_template('cards_tgc_sellers.html', sellers=sellers, cards=cards)
 

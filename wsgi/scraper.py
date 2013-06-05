@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 import models
 
 
-def resolve_cards(content):
+def resolve_cards_async(content):
     """Parses card info using MagiccardScrapper in thread for request mode
 
     :param content: list of (card_name, card_number) tuples
@@ -14,6 +14,37 @@ def resolve_cards(content):
     """
     pool = eventlet.GreenPool(len(content))
     return [card for card in pool.imap(MagiccardsScraper.resolve_card, content)]
+
+
+def get_tcg_sellers_async(cards):
+    """Parses TCGPlayer sellers that could sell specified cards
+
+    :param cards: list of models.Card objects
+    :return: list of models.TCGSeller objects
+    """
+    unique_sellers = {}
+    pool = eventlet.GreenPool(len(cards))
+    for card, sellers in pool.imap(get_tcg_card_sellers, cards):
+        for seller in sellers:
+            if seller.name not in unique_sellers:
+                unique_sellers[seller.name] = models.TCGSeller(seller.name, seller.url, seller.rating, seller.sales)
+
+            unique_sellers[seller.name].add_card(card, seller.condition, seller.number, seller.price)
+
+    sellers = sorted([v for k, v in unique_sellers.items()],
+                     key=lambda s: s.get_available_cards_num(cards), reverse=True)
+
+    return sellers
+
+
+def get_tcg_card_sellers(card):
+    """Parses TCGPlayer sellers list for specified card
+
+    :param card: models.Card object
+    :return: tuple (models.Card, list(models.TCGCardSeller))
+    """
+    tcg_scrapper = TCGPlayerScrapper(card.prices.sid)
+    return card, tcg_scrapper.get_full_info()
 
 
 class MagiccardsScraper(object):
@@ -173,11 +204,16 @@ class TCGPlayerScrapper(object):
 
             sellers_blocks = soup.find('table', class_='priceTable').find_all('tr', class_='vendor')
             for block in sellers_blocks:
-                name = block.find('td', class_='seller').find_all('a')[0].text.strip()
+                seller_td = block.find('td', class_='seller')
+                name = seller_td.find_all('a')[0].text.strip()
+                url = self._get_domain(self.full_url) + seller_td.find_all('a')[0]['href']
+                rating = str(seller_td.find('span', class_='actualRating').find('a').contents[0]).strip().split()[1]
+                sales = str(seller_td.find('span', class_='ratingHeading').find('a').contents[0]).strip()
                 number = int(block.find('td', class_='quantity').text.strip())
                 price = str(block.find('td', class_='price').contents[0]).strip()
+                condition = str(block.find('td', class_='condition').find('a').contents[0]).strip()
 
-                seller = models.TCGCardSeller(self.sid, name, number, price)
+                seller = models.TCGCardSeller(self.sid, name, url, rating, sales, number, price, condition)
                 sellers.append(seller)
 
             pager_block = soup.find('div', class_='pricePager')

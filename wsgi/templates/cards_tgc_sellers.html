@@ -7,19 +7,47 @@
     <div class="accordion-group">
         <div class="accordion-heading">
             <a class="accordion-toggle" data-toggle="collapse" data-parent="#sellersacc" href="#{{ anchor }}">
-                {{ seller.name }}
+                <span class="pull-left">{{ seller.name }}</span>
+                <span class="pull-right">Stats: afadsfgasdknfgcsdha asdfhcnsahfc</span>
+                <div class="clearfix"></div>
             </a>
         </div>
         <div id="{{ anchor }}" class="accordion-body collapse{% if first %} in{% set first = False %}{% endif %}">
             <div class="accordion-inner">
+                <dl class="dl-horizontal pull-left">
+                    <dt>Seller:</dt>
+                    <dd><a href="{{ seller.url }}">{{ seller.name }}</a></dd>
+                    <dt>Rating:</dt>
+                    <dd>{{ seller.rating }}</dd>
+                    <dt>Sales:</dt>
+                    <dd>{{ seller.sales }}</dd>
+                </dl>
+                <dl class="dl-horizontal pull-left">
+                    <dt>Seller:</dt>
+                    <dd><a href="{{ seller.url }}">{{ seller.name }}</a></dd>
+                    <dt>Rating:</dt>
+                    <dd>{{ seller.rating }}</dd>
+                    <dt>Sales:</dt>
+                    <dd>{{ seller.sales }}</dd>
+                </dl>
                 <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>name</th>
+                            <th>need</th>
+                            <th>available</th>
+                            <th>price</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         {% for card in seller.cards %}
                         <tr>
-                            <td>{{ card['card'].name }}</td>
-                            <td>{{ card['card'].number }}</td>
-                            <td>{{ card.number }}</td>
-                            <td>{{ card.price }}</td>
+                            <td class="text-middle">
+                                <a href="{{ card['card'].info.url }}">{{ card['card'].name }}</a> ({{ card['condition'] }})
+                            </td>
+                            <td class="text-center text-middle">{{ card['card'].number }}</td>
+                            <td class="text-center">{{ card['number'] }}</td>
+                            <td class="text-center">{{ card['price'] }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>

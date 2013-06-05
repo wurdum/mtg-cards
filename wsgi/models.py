@@ -70,11 +70,15 @@ class TCGCardSeller(object):
     Represents tcg seller for specific card
     """
 
-    def __init__(self, sid, name, number, price):
+    def __init__(self, sid, name, url, rating, sales, number, price, condition):
         self.sid = sid
         self.name = name
+        self.url = url
+        self.rating = rating
         self.number = number
         self.price = price
+        self.sales = sales
+        self.condition = condition
 
     def __repr__(self):
         return self.name + ' ' + self.sid
@@ -85,16 +89,19 @@ class TCGSeller(object):
     Represents seller that has several cards
     """
 
-    def __init__(self, name):
+    def __init__(self, name, url, rating, sales):
         self.name = name
+        self.url = url
+        self.rating = rating
+        self.sales = sales
         self._cards = []
 
     @property
     def cards(self):
         return self._cards
 
-    def add_card(self, card, number, price):
-        self._cards.append({'card': card, 'number': number, 'price': price})
+    def add_card(self, card, condition, number, price):
+        self._cards.append({'card': card, 'condition': condition, 'number': number, 'price': price})
 
     def get_available_cards_num(self, cards):
         """Returns number of cards that could be bought from this seller
