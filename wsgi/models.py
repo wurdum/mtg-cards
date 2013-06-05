@@ -112,6 +112,12 @@ class TCGSeller(object):
         else:
             card_record['supply'].append(card_supply)
 
+    def has_all_cards(self, cards):
+        """
+        Returns True if all cards is available and False if not
+        """
+        return self.get_available_cards_num(cards) == sum([c.number for c in cards])
+
     def get_available_cards_num(self, cards):
         """Returns number of cards that could be bought from this seller
 
@@ -126,6 +132,45 @@ class TCGSeller(object):
                 available += card.number if cards_available >= card.number else cards_available
 
         return available
+
+    def calculate_cards_cost(self, cards):
+        """Returns cost of cards list
+
+        :param cards: list of models.Card objects
+        :return: cost as float
+        """
+        if not self.has_all_cards(cards):
+            raise ValueError('not all cards are available from this seller')
+
+        cost = 0.0
+        for card in cards:
+            card_record = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
+            supplies = sorted(card_record['supply'], key=lambda r: self._parse_price(r['price']))
+
+            bought = 0
+            for supply in supplies:
+                need_cards = card.number - bought
+                available_cards = supply['number']
+
+                if available_cards > need_cards:
+                    bought += need_cards
+                    cost += need_cards * self._parse_price(supply['price'])
+                else:
+                    bought += available_cards
+                    cost += available_cards * self._parse_price(supply['price'])
+
+                if bought == card.number:
+                    break
+
+        return cost
+
+    def _parse_price(self, string):
+        """Parses price, if price is 0 the returns 0.01
+
+        :param string: string representation of price like $0.01
+        :return: float number
+        """
+        return float(string[1:]) if float(string[1:]) > 0 else 0.01
 
     def __repr__(self):
         return self.name + ' ' + len(self._cards)

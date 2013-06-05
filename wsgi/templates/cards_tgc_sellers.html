@@ -8,20 +8,12 @@
         <div class="accordion-heading">
             <a class="accordion-toggle" data-toggle="collapse" data-parent="#sellersacc" href="#{{ anchor }}">
                 <span class="pull-left">{{ seller.name }}</span>
-                <span class="pull-right">Stats: afadsfgasdknfgcsdha asdfhcnsahfc</span>
+                <span class="pull-right">Stats: deck cost: ${{ seller.calculate_cards_cost(cards) }}</span>
                 <div class="clearfix"></div>
             </a>
         </div>
         <div id="{{ anchor }}" class="accordion-body collapse{% if first %} in{% set first = False %}{% endif %}">
             <div class="accordion-inner">
-                <dl class="dl-horizontal pull-left">
-                    <dt>Seller:</dt>
-                    <dd><a href="{{ seller.url }}">{{ seller.name }}</a></dd>
-                    <dt>Rating:</dt>
-                    <dd>{{ seller.rating }}</dd>
-                    <dt>Sales:</dt>
-                    <dd>{{ seller.sales }}</dd>
-                </dl>
                 <dl class="dl-horizontal pull-left">
                     <dt>Seller:</dt>
                     <dd><a href="{{ seller.url }}">{{ seller.name }}</a></dd>

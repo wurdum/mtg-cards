@@ -34,8 +34,9 @@ def get_tcg_sellers_async(cards):
             for seller in sellers_group:
                 unique_sellers[seller.name].add_card(card, seller.condition, seller.number, seller.price)
 
-    sellers = sorted([v for k, v in unique_sellers.items()],
-                     key=lambda s: s.get_available_cards_num(cards), reverse=True)
+    sellers = [v for k, v in unique_sellers.items()]
+    sellers = filter(lambda s: s.has_all_cards(cards), sellers)
+    sellers = sorted(sellers, key=lambda s: s.calculate_cards_cost(cards))
 
     return sellers
 
@@ -211,7 +212,7 @@ class TCGPlayerScrapper(object):
                 name = seller_td.find_all('a')[0].text.strip()
                 url = self._get_domain(self.full_url) + seller_td.find_all('a')[0]['href']
                 rating = str(seller_td.find('span', class_='actualRating').find('a').contents[0]).strip().split()[1]
-                sales = str(seller_td.find('span', class_='ratingHeading').find('a').contents[0]).strip()
+                sales = self._value_or_empty(lambda: str(seller_td.find('span', class_='ratingHeading').find('a').contents[0]).strip())
                 number = int(block.find('td', class_='quantity').text.strip())
                 price = str(block.find('td', class_='price').contents[0]).strip()
                 condition = str(block.find('td', class_='condition').find('a').contents[0]).strip()
@@ -229,6 +230,12 @@ class TCGPlayerScrapper(object):
         grouped_sellers = [list(g) for k, g in itertools.groupby(sellers, key=lambda s: s.name)]
 
         return grouped_sellers
+
+    def _value_or_empty(self, func):
+        try:
+            return func()
+        except:
+            return ''
 
     def _get_domain(self, url):
         """
