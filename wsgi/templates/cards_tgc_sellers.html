@@ -30,25 +30,31 @@
                     <dt>Sales:</dt>
                     <dd>{{ seller.sales }}</dd>
                 </dl>
-                <table class="table table-bordered table-striped">
+                <table class="table table-bordered">
                     <thead>
                         <tr>
                             <th>name</th>
                             <th>need</th>
+                            <th>condition</th>
                             <th>available</th>
                             <th>price</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for card in seller.cards %}
+                        {% for card_record in seller.cards %}
                         <tr>
-                            <td class="text-middle">
-                                <a href="{{ card['card'].info.url }}">{{ card['card'].name }}</a> ({{ card['condition'] }})
+                            <td class="text-middle" rowspan="{{ card_record['supply']|length + 1 }}">
+                                <a href="{{ card_record['card'].info.url }}">{{ card_record['card'].name }}</a>
                             </td>
-                            <td class="text-center text-middle">{{ card['card'].number }}</td>
-                            <td class="text-center">{{ card['number'] }}</td>
-                            <td class="text-center">{{ card['price'] }}</td>
+                            <td class="text-center text-middle" rowspan="{{ card_record['supply']|length + 1 }}">{{ card_record['card'].number }}</td>
                         </tr>
+                        {% for supply_info in card_record['supply'] %}
+                        <tr>
+                            <td class="text-center">{{ supply_info['condition'] }}</td>
+                            <td class="text-center">{{ supply_info['number'] }}</td>
+                            <td class="text-center">{{ supply_info['price'] }}</td>
+                        </tr>
+                        {% endfor %}
                         {% endfor %}
                     </tbody>
                 </table>

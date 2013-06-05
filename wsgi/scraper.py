@@ -1,4 +1,5 @@
 import re
+import itertools
 import urlparse
 import eventlet
 from eventlet.green import urllib2
@@ -24,12 +25,14 @@ def get_tcg_sellers_async(cards):
     """
     unique_sellers = {}
     pool = eventlet.GreenPool(len(cards))
-    for card, sellers in pool.imap(get_tcg_card_sellers, cards):
-        for seller in sellers:
-            if seller.name not in unique_sellers:
-                unique_sellers[seller.name] = models.TCGSeller(seller.name, seller.url, seller.rating, seller.sales)
+    for card, sellers_groups in pool.imap(get_tcg_card_sellers, cards):
+        for sellers_group in sellers_groups:
+            if sellers_group[0].name not in unique_sellers:
+                unique_sellers[sellers_group[0].name] = models.TCGSeller(sellers_group[0].name, sellers_group[0].url,
+                                                                         sellers_group[0].rating, sellers_group[0].sales)
 
-            unique_sellers[seller.name].add_card(card, seller.condition, seller.number, seller.price)
+            for seller in sellers_group:
+                unique_sellers[seller.name].add_card(card, seller.condition, seller.number, seller.price)
 
     sellers = sorted([v for k, v in unique_sellers.items()],
                      key=lambda s: s.get_available_cards_num(cards), reverse=True)
@@ -223,7 +226,9 @@ class TCGPlayerScrapper(object):
 
             link = self._get_domain(self.full_url) + next_link_tag['href']
 
-        return sellers
+        grouped_sellers = [list(g) for k, g in itertools.groupby(sellers, key=lambda s: s.name)]
+
+        return grouped_sellers
 
     def _get_domain(self, url):
         """

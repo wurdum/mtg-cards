@@ -101,7 +101,16 @@ class TCGSeller(object):
         return self._cards
 
     def add_card(self, card, condition, number, price):
-        self._cards.append({'card': card, 'condition': condition, 'number': number, 'price': price})
+        """
+        Adds new card to cards list or if such already added, adds only supply info
+        """
+        card_supply = {'condition': condition, 'number': number, 'price': price}
+        card_record = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
+
+        if card_record is None:
+            self._cards.append({'card': card, 'supply': [card_supply]})
+        else:
+            card_record['supply'].append(card_supply)
 
     def get_available_cards_num(self, cards):
         """Returns number of cards that could be bought from this seller
@@ -111,9 +120,10 @@ class TCGSeller(object):
         """
         available = 0
         for card in cards:
-            available_card = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
-            if available_card is not None:
-                available += card.number if available_card['number'] >= card.number else available_card['number']
+            card_record = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
+            if card_record is not None:
+                cards_available = sum([r['number'] for r in card_record['supply']])
+                available += card.number if cards_available >= card.number else cards_available
 
         return available
 
