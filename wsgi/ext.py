@@ -19,14 +19,15 @@ def get_first(iterable, func, default=None):
     return default
 
 
-def result_or_default(func, default=None):
+def result_or_default(func, default=None, prevent_empty=False):
     """Returns result of func execution or default value
 
     :param func: function to execute
     :return: result of func ot default value
     """
     try:
-        return func()
+        result = func()
+        return result if not prevent_empty or result else default
     except:
         return default
 

@@ -221,14 +221,23 @@ class TCGPlayerScrapper(object):
 
                 offers.append(models.TCGCardOffer(self.sid, name, url, rating, sales, number, price, condition))
 
-            pager_block = soup.find('div', class_='pricePager')
-            next_link_tag = pager_block.find('a', text=re.compile(r'Next'))
-            if 'disabled' in next_link_tag.attrs:
+            link_next = self._get_link_next(soup)
+            if 'disabled' in link_next.attrs:
                 break
 
-            link = ext.get_domain(self.full_url) + next_link_tag['href']
+            link = ext.get_domain(self.full_url) + link_next['href']
 
         group_key = lambda s: {'name': s.name, 'url': s.url, 'rating': s.rating, 'sales': s.sales}
         grouped_offers = [{'seller': k, 'offers': list(g)} for k, g in itertools.groupby(offers, key=group_key)]
 
         return grouped_offers
+
+    def _get_link_next(self, soup):
+        """Parses soup to find tag with link to Next page in list
+
+        :param soup: soup page with list of prices
+        :return: link Next page tag
+        """
+        pager_block = soup.find('div', class_='pricePager')
+        next_link_tag = pager_block.find('a', text=re.compile(r'Next'))
+        return next_link_tag

@@ -28,7 +28,16 @@ def price_float(card, prop):
     :param prop: price that will be used (low, mid, high)
     :return: price as float number
     """
-    return float(card.prices.__dict__[prop][1:])
+    return price_str_to_float(card.prices.__dict__[prop])
+
+
+def price_str_to_float(string):
+    """Converts string price to float repr, if price is 0 returns 0.01
+
+    :param string: price string repr
+    :return: price as float
+    """
+    return float(string[1:]) if float(string[1:]) > 0 else 0.01
 
 
 def get_new_order(args):

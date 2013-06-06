@@ -39,10 +39,10 @@ def upload():
 @app.route('/<token>/<repr>', methods=['GET'])
 def cards(token, repr):
     cards = db.get_cards(token, only_resolved=True)
-    sort = request.args.get('sort', 'name') if request.args.get('sort', 'name') else 'name'
-    order = request.args.get('order', 'asc') if request.args.get('order', 'asc') else 'asc'
-    key_for_sort = lambda c: c.name if sort == 'name' else filters.price(c, 'low')
+    sort = ext.result_or_default(lambda: request.args['sort'], default='name', prevent_empty=True)
+    order = ext.result_or_default(lambda: request.args['order'], default='asc', prevent_empty=True)
 
+    key_for_sort = lambda c: c.name if sort == 'name' else filters.price(c, 'low')
     templ_data = {'token': token, 'cards': sorted(cards, key=key_for_sort, reverse=order == 'desc'),
                   'repr': repr, 'sort': sort, 'order': order}
 

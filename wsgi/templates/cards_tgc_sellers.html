@@ -35,12 +35,14 @@
                     <tbody>
                         {% for card_record in seller.cards %}
                         <tr>
-                            <td class="text-middle" rowspan="{{ card_record['supply']|length + 1 }}">
+                            <td class="text-middle" rowspan="{{ card_record['offers']|length + 1 }}">
                                 <a href="{{ card_record['card'].info.url }}">{{ card_record['card'].name }}</a>
                             </td>
-                            <td class="text-center text-middle" rowspan="{{ card_record['supply']|length + 1 }}">{{ card_record['card'].number }}</td>
+                            <td class="text-center text-middle" rowspan="{{ card_record['offers']|length + 1 }}">
+                                {{ card_record['card'].number }}
+                            </td>
                         </tr>
-                        {% for supply_info in card_record['supply'] %}
+                        {% for supply_info in card_record['offers'] %}
                         <tr>
                             <td class="text-center">{{ supply_info['condition'] }}</td>
                             <td class="text-center">{{ supply_info['number'] }}</td>

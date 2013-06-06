@@ -1,4 +1,5 @@
 import ext
+import filters
 
 
 class Card(object):
@@ -104,13 +105,12 @@ class TCGSeller(object):
         """
         Adds new card to cards list or if such already added, adds only supply info
         """
-        card_supply = {'condition': condition, 'number': number, 'price': price}
+        card_offer = {'condition': condition, 'number': number, 'price': price}
         card_record = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
-
         if card_record is None:
-            self._cards.append({'card': card, 'supply': [card_supply]})
+            self._cards.append({'card': card, 'offers': [card_offer]})
         else:
-            card_record['supply'].append(card_supply)
+            card_record['offers'].append(card_offer)
 
     def has_all_cards(self, cards):
         """
@@ -128,7 +128,7 @@ class TCGSeller(object):
         for card in cards:
             card_record = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
             if card_record is not None:
-                cards_available = sum([r['number'] for r in card_record['supply']])
+                cards_available = sum([r['number'] for r in card_record['offers']])
                 available += card.number if cards_available >= card.number else cards_available
 
         return available
@@ -145,32 +145,21 @@ class TCGSeller(object):
         cost = 0.0
         for card in cards:
             card_record = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
-            supplies = sorted(card_record['supply'], key=lambda r: self._parse_price(r['price']))
+            offers = sorted(card_record['offers'], key=lambda r: filters.price_str_to_float(r['price']))
 
             bought = 0
-            for supply in supplies:
+            for offer in offers:
                 need_cards = card.number - bought
-                available_cards = supply['number']
+                available_cards = offer['number']
 
-                if available_cards > need_cards:
-                    bought += need_cards
-                    cost += need_cards * self._parse_price(supply['price'])
-                else:
-                    bought += available_cards
-                    cost += available_cards * self._parse_price(supply['price'])
+                buy_cards = need_cards if available_cards > need_cards else available_cards
+                bought += buy_cards
+                cost += buy_cards * filters.price_str_to_float(offer['price'])
 
                 if bought == card.number:
                     break
 
         return cost
-
-    def _parse_price(self, string):
-        """Parses price, if price is 0 the returns 0.01
-
-        :param string: string representation of price like $0.01
-        :return: float number
-        """
-        return float(string[1:]) if float(string[1:]) > 0 else 0.01
 
     def __repr__(self):
         return self.name + ' ' + len(self._cards)
