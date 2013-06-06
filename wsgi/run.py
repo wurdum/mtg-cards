@@ -68,13 +68,12 @@ def tcg(token, list_type):
     cards = db.get_cards(token, only_resolved=True)
     sellers = scraper.get_tcg_sellers_async(cards)
 
-    if list_type == 'av':
-        sellers = filter(lambda s: s.has_all_cards(cards), sellers)
-        sellers = sorted(sellers, key=lambda s: s.calculate_cards_cost(cards))
-    else:
-        sellers = sorted(sellers, key=lambda s: s.get_available_cards_num(cards), reverse=True)
+    sellers_av = filter(lambda s: s.has_all_cards(cards), sellers)
+    sellers_av = sorted(sellers_av, key=lambda s: s.calculate_cards_cost(cards))
+    sellers_al = sorted(sellers, key=lambda s: s.get_available_cards_num(cards), reverse=True)
 
-    return render_template('cards_ggc_sellers.html', token=token, cards=cards, sellers=sellers, list_type=list_type)
+    return render_template('cards_tcg_sellers.html', token=token, cards=cards,
+                           sellers_groups={'av': sellers_av[:10], 'al': sellers_al[:30]}, list_type=list_type)
 
 
 @app.route('/delete', methods=['POST'])
