@@ -97,16 +97,16 @@ class TCGSeller(object):
     def cards(self):
         return self._cards
 
-    def add_card(self, card, condition, number, price):
+    def add_card(self, card, offer):
         """
-        Adds new card to cards list or if such already added, adds only supply info
+        Adds new card to cards list or if such already added, adds only offer info
         """
-        card_offer = {'condition': condition, 'number': number, 'price': price}
-        card_record = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
-        if card_record is None:
-            self._cards.append({'card': card, 'offers': [card_offer]})
-        else:
-            card_record['offers'].append(card_offer)
+        card_offers = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
+        if card_offers is None:
+            card_offers = {'card': card, 'offers': []}
+            self._cards.append(card_offers)
+
+        card_offers['offers'].append(offer)
 
     def has_all_cards(self, cards):
         """
@@ -122,9 +122,9 @@ class TCGSeller(object):
         """
         available = 0
         for card in cards:
-            card_record = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
-            if card_record is not None:
-                cards_available = sum([r['number'] for r in card_record['offers']])
+            card_offers = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
+            if card_offers is not None:
+                cards_available = sum([r.number for r in card_offers['offers']])
                 available += card.number if cards_available >= card.number else cards_available
 
         return available
@@ -140,17 +140,17 @@ class TCGSeller(object):
 
         cost = 0.0
         for card in cards:
-            card_record = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
-            offers = sorted(card_record['offers'], key=lambda r: filters.price_str_to_float(r['price']))
+            card_offers = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
+            offers = sorted(card_offers['offers'], key=lambda r: filters.price_str_to_float(r.price))
 
             bought = 0
             for offer in offers:
                 need_cards = card.number - bought
-                available_cards = offer['number']
+                available_cards = offer.number
 
                 buy_cards = need_cards if available_cards > need_cards else available_cards
                 bought += buy_cards
-                cost += buy_cards * filters.price_str_to_float(offer['price'])
+                cost += buy_cards * filters.price_str_to_float(offer.price)
 
                 if bought == card.number:
                     break

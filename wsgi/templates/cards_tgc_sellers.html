@@ -33,20 +33,20 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for card_record in seller.cards %}
+                        {% for card_offers in seller.cards %}
                         <tr>
-                            <td class="text-middle" rowspan="{{ card_record['offers']|length + 1 }}">
-                                <a href="{{ card_record['card'].info.url }}">{{ card_record['card'].name }}</a>
+                            <td class="text-middle" rowspan="{{ card_offers['offers']|length + 1 }}">
+                                <a href="{{ card_offers['card'].info.url }}">{{ card_offers['card'].name }}</a>
                             </td>
-                            <td class="text-center text-middle" rowspan="{{ card_record['offers']|length + 1 }}">
-                                {{ card_record['card'].number }}
+                            <td class="text-center text-middle" rowspan="{{ card_offers['offers']|length + 1 }}">
+                                {{ card_offers['card'].number }}
                             </td>
                         </tr>
-                        {% for supply_info in card_record['offers'] %}
+                        {% for offer in card_offers['offers'] %}
                         <tr>
-                            <td class="text-center">{{ supply_info['condition'] }}</td>
-                            <td class="text-center">{{ supply_info['number'] }}</td>
-                            <td class="text-center">{{ supply_info['price'] }}</td>
+                            <td class="text-center">{{ offer.condition }}</td>
+                            <td class="text-center">{{ offer.number }}</td>
+                            <td class="text-center">{{ offer.price }}</td>
                         </tr>
                         {% endfor %}
                         {% endfor %}
