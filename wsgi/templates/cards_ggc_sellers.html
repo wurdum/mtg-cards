@@ -1,5 +1,15 @@
 {% extends 'cards_base.html' %}
 {% block cards_list %}
+<div class="tabbable">
+    <ul class="nav nav-tabs">
+        <li class="{{ list_type|active_if('av') }}">
+            <a href="{{ url_for('tcg', token=token, list_type='av') }}">All cards available</a>
+        </li>
+        <li class="{{ list_type|active_if('al') }}">
+            <a href="{{ url_for('tcg', token=token, list_type='al') }}">All</a>
+        </li>
+    </ul>
+</div>
 <div class="accordion" id="sellersacc">
     {% set first = sellers|first %}
     {% set cardsSum = cards|sum(attribute='number') %}

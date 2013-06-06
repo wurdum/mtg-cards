@@ -59,14 +59,22 @@ def stats(token):
     cards = db.get_cards(token)
     return render_template('upload_stats.html', token=token, cards=cards)
 
+@app.route('/<token>/shop/tcg/av', defaults={'list_type': 'av'}, methods=['GET'])
+@app.route('/<token>/shop/tcg/<list_type>', methods=['GET'])
+def tcg(token, list_type):
+    if list_type not in ['av', 'al']:
+        list_type = 'av'
 
-@app.route('/<token>/shop/tcg')
-def tcg(token):
     cards = db.get_cards(token, only_resolved=True)
     sellers = scraper.get_tcg_sellers_async(cards)
-    # sellers = filter(lambda s: s.has_all_cards(cards), sellers)
-    # sellers = sorted(sellers, key=lambda s: s.calculate_cards_cost(cards))
-    return render_template('cards_tgc_sellers.html', token=token, cards=cards, sellers=sellers)
+
+    if list_type == 'av':
+        sellers = filter(lambda s: s.has_all_cards(cards), sellers)
+        sellers = sorted(sellers, key=lambda s: s.calculate_cards_cost(cards))
+    else:
+        sellers = sorted(sellers, key=lambda s: s.get_available_cards_num(cards), reverse=True)
+
+    return render_template('cards_ggc_sellers.html', token=token, cards=cards, sellers=sellers, list_type=list_type)
 
 
 @app.route('/delete', methods=['POST'])
