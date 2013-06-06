@@ -71,18 +71,14 @@ class TCGCardOffer(object):
     Represents tcg seller for specific card
     """
 
-    def __init__(self, sid, name, url, rating, sales, number, price, condition):
+    def __init__(self, sid, condition, number, price):
         self.sid = sid
-        self.name = name
-        self.url = url
-        self.rating = rating
+        self.condition = condition
         self.number = number
         self.price = price
-        self.sales = sales
-        self.condition = condition
 
     def __repr__(self):
-        return self.name + ' ' + self.sid
+        return self.sid + ' ' + self.condition
 
 
 class TCGSeller(object):
@@ -160,6 +156,12 @@ class TCGSeller(object):
                     break
 
         return cost
+
+    def __hash__(self):
+        return hash((self.name, self.url))
+
+    def __eq__(self, other):
+        return (self.name, self.url) == (other.name, other.url)
 
     def __repr__(self):
         return self.name + ' ' + len(self._cards)

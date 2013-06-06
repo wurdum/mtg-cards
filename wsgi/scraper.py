@@ -21,20 +21,20 @@ def get_tcg_sellers_async(cards):
     """Parses TCGPlayer sellers that could sell specified cards
 
     :param cards: list of models.Card objects
-    :return: list of models.TCGSeller objects
+    :return: list of models.TCGSeller objects with filled cards property
     """
-    unique_sellers = {}
+    sellers = []
     pool = eventlet.GreenPool(len(cards))
-    for card, offers in pool.imap(get_tcg_card_offers, cards):
-        for offer in offers:
-            seller_name = offer['seller']['name']
-            if seller_name not in unique_sellers:
-                unique_sellers[seller_name] = models.TCGSeller(**offer['seller'])
+    for card, sellers_offers in pool.imap(get_tcg_card_offers, cards):
+        for seller_offers in sellers_offers:
+            seller = ext.get_first(sellers, lambda s: s == seller_offers['seller'])
+            if seller is None:
+                seller = seller_offers['seller']
+                sellers.append(seller)
 
-            for record in offer['offers']:
-                unique_sellers[seller_name].add_card(card, record.condition, record.number, record.price)
+            for offer in seller_offers['offers']:
+                seller.add_card(card, offer.condition, offer.number, offer.price)
 
-    sellers = [v for k, v in unique_sellers.items()]
     sellers = filter(lambda s: s.has_all_cards(cards), sellers)
     sellers = sorted(sellers, key=lambda s: s.calculate_cards_cost(cards))
 
@@ -45,7 +45,7 @@ def get_tcg_card_offers(card):
     """Parses TCGPlayer sellers list for specified card
 
     :param card: models.Card object
-    :return: tuple (models.Card, list(models.TCGCardSeller))
+    :return: tuple (models.Card, dict {'seller': models.TCGSeller, 'offers': list of models.TCGCardOffer})
     """
     tcg_scrapper = TCGPlayerScrapper(card.prices.sid)
     return card, tcg_scrapper.get_full_info()
@@ -195,12 +195,12 @@ class TCGPlayerScrapper(object):
     def get_full_info(self):
         """Parses offers info for card
 
-        :return: list of models.TCGSeller objects
+        :return: dict {'seller': models.TCGSeller, 'offers': list of models.TCGCardOffer}
         """
         opener = urllib2.build_opener()
         opener.addheaders.append(self.FULL_URL_COOKIE)
 
-        offers = []
+        sellers_offers = []
         link = self.full_url
         while True:
             tcg_response = opener.open(link).read()
@@ -219,7 +219,8 @@ class TCGPlayerScrapper(object):
                 price = str(block.find('td', class_='price').contents[0]).strip()
                 condition = str(block.find('td', class_='condition').find('a').contents[0]).strip()
 
-                offers.append(models.TCGCardOffer(self.sid, name, url, rating, sales, number, price, condition))
+                sellers_offers.append({'seller': models.TCGSeller(name, url, rating, sales),
+                                       'offer': models.TCGCardOffer(self.sid, condition, number, price)})
 
             link_next = self._get_link_next(soup)
             if 'disabled' in link_next.attrs:
@@ -227,10 +228,10 @@ class TCGPlayerScrapper(object):
 
             link = ext.get_domain(self.full_url) + link_next['href']
 
-        group_key = lambda s: {'name': s.name, 'url': s.url, 'rating': s.rating, 'sales': s.sales}
-        grouped_offers = [{'seller': k, 'offers': list(g)} for k, g in itertools.groupby(offers, key=group_key)]
+        grouped_sellers = [{'seller': k, 'offers': [seller_offer['offer'] for seller_offer in g]}
+                           for k, g in itertools.groupby(sellers_offers, key=lambda so: so['seller'])]
 
-        return grouped_offers
+        return grouped_sellers
 
     def _get_link_next(self, soup):
         """Parses soup to find tag with link to Next page in list
