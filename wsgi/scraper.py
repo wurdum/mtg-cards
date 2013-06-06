@@ -35,9 +35,6 @@ def get_tcg_sellers_async(cards):
             for offer in seller_offers['offers']:
                 seller.add_card(card, offer)
 
-    sellers = filter(lambda s: s.has_all_cards(cards), sellers)
-    sellers = sorted(sellers, key=lambda s: s.calculate_cards_cost(cards))
-
     return sellers
 
 

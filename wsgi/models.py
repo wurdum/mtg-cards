@@ -135,12 +135,13 @@ class TCGSeller(object):
         :param cards: list of models.Card objects
         :return: cost as float
         """
-        if not self.has_all_cards(cards):
-            raise ValueError('not all cards are available from this seller')
 
         cost = 0.0
         for card in cards:
             card_offers = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
+            if card_offers is None:
+                continue
+
             offers = sorted(card_offers['offers'], key=lambda r: filters.price_str_to_float(r.price))
 
             bought = 0

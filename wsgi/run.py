@@ -64,7 +64,8 @@ def stats(token):
 def tcg(token):
     cards = db.get_cards(token, only_resolved=True)
     sellers = scraper.get_tcg_sellers_async(cards)
-
+    # sellers = filter(lambda s: s.has_all_cards(cards), sellers)
+    # sellers = sorted(sellers, key=lambda s: s.calculate_cards_cost(cards))
     return render_template('cards_tgc_sellers.html', token=token, cards=cards, sellers=sellers)
 
 

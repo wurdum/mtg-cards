@@ -1,18 +1,25 @@
 {% extends 'cards_base.html' %}
 {% block cards_list %}
 <div class="accordion" id="sellersacc">
-    {% set first = True %}
+    {% set first = sellers|first %}
+    {% set cardsSum = cards|sum(attribute='number') %}
     {% for seller in sellers %}
-    {% set anchor = seller.name|idfy %}
     <div class="accordion-group">
+        {% set anchor = seller.name|idfy %}
         <div class="accordion-heading">
             <a class="accordion-toggle" data-toggle="collapse" data-parent="#sellersacc" href="#{{ anchor }}">
+                {% set cost = seller.calculate_cards_cost(cards) %}
+                {% set available = seller.get_available_cards_num(cards) %}
                 <span class="pull-left">{{ seller.name }}</span>
-                <span class="pull-right">Stats: deck cost: ${{ seller.calculate_cards_cost(cards) }}</span>
+                <span class="pull-right">
+                    need: <strong>{{ '%d'|format(cardsSum) }}</strong>
+                    available: <strong>{{ '%d'|format(available) }}</strong>
+                    cost: <strong>${{ '%0.2f'|format(cost) }}</strong>
+                </span>
                 <div class="clearfix"></div>
             </a>
         </div>
-        <div id="{{ anchor }}" class="accordion-body collapse{% if first %} in{% set first = False %}{% endif %}">
+        <div id="{{ anchor }}" class="accordion-body collapse{% if seller == first %} in{% endif %}">
             <div class="accordion-inner">
                 <dl class="dl-horizontal pull-left">
                     <dt>Seller:</dt>
