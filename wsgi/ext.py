@@ -1,6 +1,7 @@
 import random
 import string
 import cStringIO
+import itertools
 import urlparse
 
 
@@ -69,7 +70,7 @@ def parse_card(line):
     If no cards number found, returns 1.
 
     :param line: input string
-    :return: tuple (card name, cards number)
+    :return: dict {card name, cards number}
     """
 
     length = len(line)
@@ -83,9 +84,9 @@ def parse_card(line):
     if not number:
         number = '1'
 
-    card_name = line[:current_pos].strip(' \t\r;')
+    name = line[:current_pos].strip(' \t\r;')
 
-    return card_name, number
+    return {'name': name, 'number': int(number)}
 
 
 def read_file(stream):
@@ -100,6 +101,10 @@ def read_file(stream):
         full_content = stream.getvalue()
         stripped_lines = [l.strip(' \t\r') for l in full_content.split('\n')]
         cards = [parse_card(card) for card in stripped_lines if card]
-        return cards
+
+        unique_cards = [(key, sum([c['number'] for c in value]))
+                        for key, value in itertools.groupby(cards, key=lambda c: c['name'])]
+
+        return unique_cards
 
     raise IOError('unknown input stream format encountered, type: %s' % type(stream))
