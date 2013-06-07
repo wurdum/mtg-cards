@@ -16,8 +16,8 @@
                     {% set anchor = seller.name|idfy %}
                     <div class="accordion-heading">
                         <a class="accordion-toggle" data-toggle="collapse" data-parent="#{{ id }}-sellersacc" href="#{{ id + '-' + anchor }}">
-                            {% set cost = seller.calculate_cards_cost(cards) %}
-                            {% set available = seller.get_available_cards_num(cards) %}
+                            {% set cost = seller.calculate_cards_cost() %}
+                            {% set available = seller.get_available_cards_num() %}
                             <span class="pull-left">{{ seller.name }}</span>
                             <span class="pull-right">
                                 need: <strong>{{ '%d'|format(cardsSum) }}</strong>
@@ -48,16 +48,16 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                {% for card_offers in seller.cards %}
+                                {% for col in seller.card_offers_lists %}
                                     <tr>
-                                        <td class="text-middle" rowspan="{{ card_offers['offers']|length + 1 }}">
-                                            <a href="{{ card_offers['card'].info.url }}">{{ card_offers['card'].name }}</a>
+                                        <td class="text-middle" rowspan="{{ col.offers|length + 1 }}">
+                                            <a href="{{ col.card.info.url }}">{{ col.card.name }}</a>
                                         </td>
-                                        <td class="text-center text-middle" rowspan="{{ card_offers['offers']|length + 1 }}">
-                                            {{ card_offers['card'].number }}
+                                        <td class="text-center text-middle" rowspan="{{ col.offers|length + 1 }}">
+                                            {{ col.card.number }}
                                         </td>
                                     </tr>
-                                    {% for offer in card_offers['offers'] %}
+                                    {% for offer in col.offers %}
                                         <tr>
                                             <td class="text-center">{{ offer.condition }}</td>
                                             <td class="text-center">{{ offer.number }}</td>

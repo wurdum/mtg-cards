@@ -81,6 +81,62 @@ class TCGCardOffer(object):
         return self.sid + ' ' + self.condition
 
 
+class TCGCardOffersList(object):
+    """
+    Represents list of offers for card
+    """
+
+    def __init__(self, card):
+        self.card = card
+        self._offers = []
+
+    @property
+    def offers(self):
+        """
+        Offers list sorted by price lower to higher
+        """
+        return sorted(self._offers, key=lambda o: filters.price_str_to_float(o.price))
+
+    @property
+    def available_card_number(self):
+        """
+        Returns number of cards available to purchase
+        """
+        available = sum([o.number for o in self._offers])
+        return self.card.number if available > self.card.number else available
+
+    @property
+    def card_cost(self):
+        """
+        Returns card cost if you will buy it
+        """
+        cost = 0.0
+        bought = 0
+        for offer in self.offers:
+            need_cards = self.card.number - bought
+            available_cards = offer.number
+
+            buy_cards = need_cards if available_cards > need_cards else available_cards
+            bought += buy_cards
+            cost += buy_cards * filters.price_str_to_float(offer.price)
+
+            if bought == self.card.number:
+                break
+
+        return cost
+
+    @property
+    def card_is_available(self):
+        return self.card.number == self.available_card_number
+
+    def add_offer(self, offer):
+        """Adds new offer
+
+        :param offer: models.TCGCardOffer object
+        """
+        self._offers.append(offer)
+
+
 class TCGSeller(object):
     """
     Represents seller that has several cards
@@ -91,72 +147,42 @@ class TCGSeller(object):
         self.url = url
         self.rating = rating
         self.sales = sales
-        self._cards = []
+        self._card_offers_lists = []
 
     @property
-    def cards(self):
-        return self._cards
+    def card_offers_lists(self):
+        return self._card_offers_lists
 
-    def add_card(self, card, offer):
+    def add_card_offer(self, card, offer):
         """
         Adds new card to cards list or if such already added, adds only offer info
         """
-        card_offers = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
-        if card_offers is None:
-            card_offers = {'card': card, 'offers': []}
-            self._cards.append(card_offers)
+        card_offers_list = ext.get_first(self._card_offers_lists, lambda col: col.card.name == card.name)
+        if card_offers_list is None:
+            card_offers_list = TCGCardOffersList(card)
+            self._card_offers_lists.append(card_offers_list)
 
-        card_offers['offers'].append(offer)
+        card_offers_list.add_offer(offer)
 
     def has_all_cards(self, cards):
         """
         Returns True if all cards is available and False if not
         """
-        return self.get_available_cards_num(cards) == sum([c.number for c in cards])
+        return self.get_available_cards_num() == sum([c.number for c in cards])
 
-    def get_available_cards_num(self, cards):
+    def get_available_cards_num(self):
         """Returns number of cards that could be bought from this seller
 
-        :param cards: list of models.Card objects
         :return: number as int
         """
-        available = 0
-        for card in cards:
-            card_offers = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
-            if card_offers is not None:
-                cards_available = sum([r.number for r in card_offers['offers']])
-                available += card.number if cards_available >= card.number else cards_available
+        return sum([col.available_card_number for col in self._card_offers_lists])
 
-        return available
-
-    def calculate_cards_cost(self, cards):
+    def calculate_cards_cost(self):
         """Returns cost of cards list
 
-        :param cards: list of models.Card objects
         :return: cost as float
         """
-
-        cost = 0.0
-        for card in cards:
-            card_offers = ext.get_first(self._cards, lambda c: c['card'].name == card.name)
-            if card_offers is None:
-                continue
-
-            offers = sorted(card_offers['offers'], key=lambda r: filters.price_str_to_float(r.price))
-
-            bought = 0
-            for offer in offers:
-                need_cards = card.number - bought
-                available_cards = offer.number
-
-                buy_cards = need_cards if available_cards > need_cards else available_cards
-                bought += buy_cards
-                cost += buy_cards * filters.price_str_to_float(offer.price)
-
-                if bought == card.number:
-                    break
-
-        return cost
+        return sum([col.card_cost for col in self._card_offers_lists])
 
     def __hash__(self):
         return hash((self.name, self.url))
@@ -165,4 +191,4 @@ class TCGSeller(object):
         return (self.name, self.url) == (other.name, other.url)
 
     def __repr__(self):
-        return self.name + ' ' + len(self._cards)
+        return self.name + ' ' + len(self._card_offers_lists)

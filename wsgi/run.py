@@ -59,6 +59,7 @@ def stats(token):
     cards = db.get_cards(token)
     return render_template('upload_stats.html', token=token, cards=cards)
 
+
 @app.route('/<token>/shop/tcg/av', defaults={'list_type': 'av'}, methods=['GET'])
 @app.route('/<token>/shop/tcg/<list_type>', methods=['GET'])
 def tcg(token, list_type):
@@ -69,8 +70,8 @@ def tcg(token, list_type):
     sellers = scraper.get_tcg_sellers_async(cards)
 
     sellers_av = filter(lambda s: s.has_all_cards(cards), sellers)
-    sellers_av = sorted(sellers_av, key=lambda s: s.calculate_cards_cost(cards))
-    sellers_al = sorted(sellers, key=lambda s: s.get_available_cards_num(cards), reverse=True)
+    sellers_av = sorted(sellers_av, key=lambda s: s.calculate_cards_cost())
+    sellers_al = sorted(sellers, key=lambda s: s.get_available_cards_num(), reverse=True)
 
     return render_template('cards_tcg_sellers.html', token=token, cards=cards,
                            sellers_groups={'av': sellers_av[:10], 'al': sellers_al[:30]}, list_type=list_type)

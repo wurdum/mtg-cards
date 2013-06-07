@@ -33,7 +33,7 @@ def get_tcg_sellers_async(cards):
                 sellers.append(seller)
 
             for offer in seller_offers['offers']:
-                seller.add_card(card, offer)
+                seller.add_card_offer(card, offer)
 
     return sellers
 
