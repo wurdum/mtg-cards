@@ -1,3 +1,4 @@
+import itertools
 from flask import Flask, render_template, request, url_for, redirect
 import ext
 import scraper
@@ -71,6 +72,14 @@ def tcg(token):
 
     return render_template('cards_tcg_sellers.html', token=token, cards=cards,
                            sellers_groups={'av': sellers_av[:10], 'al': sellers_al[:30]})
+
+
+@app.route('/<token>/shop/bm', methods=['GET'])
+def bm(token):
+    cards = db.get_cards(token, only_resolved=True)
+    offers = scraper.get_buymagic_offers_async(cards)
+
+    return render_template('cards_bm_offers.html', token=token, cards=cards, offers=offers)
 
 
 @app.route('/delete', methods=['POST'])

@@ -21,6 +21,12 @@ class Card(object):
     def has_prices(self):
         return self.prices is not None
 
+    def __hash__(self):
+        return hash(self.name)
+
+    def __eq__(self, other):
+        return self.name == other.name
+
     def __repr__(self):
         return '%s x %d' % (self.name, self.number)
 
@@ -200,3 +206,19 @@ class TCGSeller(object):
 
     def __repr__(self):
         return self.name + ' ' + len(self._card_offers_lists)
+
+
+class BuyMagicOffer(object):
+    """
+    Represents card offer from www.buymagic.ua
+    """
+
+    def __init__(self, card, url, number, price, type='common'):
+        self.card = card
+        self.url = url
+        self.number = number
+        self.price = price
+        self.type = type
+
+    def __repr__(self):
+        return '%s %s %s' % (self.card, self.price, self.type)

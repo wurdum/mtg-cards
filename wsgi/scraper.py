@@ -1,3 +1,4 @@
+# coding=utf-8
 import re
 import itertools
 import eventlet
@@ -46,6 +47,20 @@ def get_tcg_card_offers(card):
     """
     tcg_scrapper = TCGPlayerScrapper(card.prices.sid)
     return card, tcg_scrapper.get_full_info()
+
+
+def get_buymagic_offers_async(cards):
+    """Parses async www.buymagic.ua to obtain offers
+
+    :param cards: list of models.Card objects
+    :return: dict {models.Card: models.BuyMagicOffer}
+    """
+    offers = {}
+    pool = eventlet.GreenPool(len(cards))
+    for card, card_offers in pool.imap(BuyMagicScrapper.get_offers, cards):
+        offers[card] = card_offers
+
+    return offers
 
 
 class MagiccardsScraper(object):
@@ -239,3 +254,52 @@ class TCGPlayerScrapper(object):
         pager_block = soup.find('div', class_='pricePager')
         next_link_tag = pager_block.find('a', text=re.compile(r'Next'))
         return next_link_tag
+
+
+class BuyMagicScrapper(object):
+    """
+    Parses search results of www.buymagic.ua
+    """
+    BASE_SEARCH_URL = 'http://www.buymagic.com.ua/edition/?color=-1&type=-1&rare=-1&id=-1&' \
+                      'name={card.name}&description=&card_type=&artist=' \
+                      '&ms=0&mv=-1&ps=0&pv=-1&ts=0&tv=-1&s=1&submit=%D0%98%D1%81%D0%BA%D0%B0%D1%82%D1%8C'
+
+    @staticmethod
+    def get_offers(card):
+        """
+        Searches specified card and offer info
+
+        :param card: models.Card object
+        :return: returns tuple (card, list of models.BuyMagicOffer)
+        """
+        search_url = BuyMagicScrapper.BASE_SEARCH_URL.replace('{card.name}', urllib2.quote(card.name))
+        page = urllib2.urlopen(search_url).read()
+        page = page.replace('<link rel="stylesheet" href="/jquery.fancybox-1.3.0.css" type="text/css" media="screen">',
+                            '').replace('"title=', '" title=')
+        soup = BeautifulSoup(page, from_encoding='utf-8')
+
+        offers = []
+        try:
+            root_div = soup.find('div', class_='c2')
+            card_div = root_div.find('p').contents[1].find('div')
+
+            url = card_div.find('a')['href']
+            price_table = card_div.find('table')
+
+            for offer_tr in price_table.find_all('tr'):
+                td_list = offer_tr.find_all('td')
+                type = 'common' if td_list[0].find('b').text.strip() == 'Обычный'.decode('utf-8') else 'foil'
+                price = BuyMagicScrapper._uah_to_dollar(td_list[1].text.strip())
+                number = len(td_list[2].find_all('option'))
+
+                offers.append(models.BuyMagicOffer(card, url, number, price, type=type))
+        except:
+            pass
+
+        return card, offers
+
+    @staticmethod
+    def _uah_to_dollar(uah):
+        uah_float_price = float(uah.split()[0])
+        dollar_float_price = uah_float_price / 8.0
+        return '$%0.2f' % dollar_float_price

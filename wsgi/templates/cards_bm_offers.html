@@ -1,0 +1,49 @@
+{% extends 'cards_base.html' %}
+{% block cards_list %}
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th rowspan="2">name</th>
+            <th rowspan="2">need</th>
+            <th colspan="3">offer</th>
+        </tr>
+        <tr>
+            <th>type</th>
+            <th>number</th>
+            <th>price</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for card in cards %}
+        {% set card_offers = offers[card] %}
+        {% if card_offers %}
+            {% set first_offer = card_offers|first %}
+            {% set offers_number = card_offers|sum(attribute='number')  %}
+            {% set is_available = offers_number >= card.number %}
+            <tr class="{{ 'warning' if not is_available else '' }}">
+                <td class="text-middle" rowspan="{{ card_offers|length + 1 }}">
+                    <p><a href="{{ card.info.url }}" >{{ card.name }} [{{ card.number }}]</a></p>
+                    <small><a href="{{ first_offer.url }}">at BuyMagic</a></small>
+                </td>
+                <td class="text-center text-middle" rowspan="{{ card_offers|length + 1 }}">{{ card.number }}</td>
+            </tr>
+            {% for offer in card_offers %}
+            <tr class="{{ 'warning' if not is_available else '' }}">
+                <td class="text-center text-middle">{{ offer.type }}</td>
+                <td class="text-center text-middle">{{ offer.number }}</td>
+                <td class="text-center text-middle">{{ offer.price }}</td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr class="error">
+                <td class="text-middle" rowspan="{{ card_offers|length + 1 }}">
+                    <p><a href="{{ card.info.url }}" >{{ card.name }} [{{ card.number }}]</a></p>
+                </td>
+                <td class="text-center text-middle" rowspan="{{ card_offers|length + 1 }}">{{ card.number }}</td>
+                <td class="text-center text-middle" colspan="3">not available</td>
+            </tr>
+        {% endif %}
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
