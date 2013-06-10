@@ -98,7 +98,7 @@ class TCGCardOffersList(object):
         return sorted(self._offers, key=lambda o: filters.price_str_to_float(o.price))
 
     @property
-    def available_card_number(self):
+    def available_card_num(self):
         """
         Returns number of cards available to purchase
         """
@@ -127,7 +127,7 @@ class TCGCardOffersList(object):
 
     @property
     def card_is_available(self):
-        return self.card.number == self.available_card_number
+        return self.card.number == self.available_card_num
 
     def add_offer(self, offer):
         """Adds new offer
@@ -153,6 +153,22 @@ class TCGSeller(object):
     def card_offers_lists(self):
         return self._card_offers_lists
 
+    @property
+    def available_cards_num(self):
+        """Returns number of cards that could be bought from this seller
+
+        :return: number as int
+        """
+        return sum([col.available_card_num for col in self._card_offers_lists])
+
+    @property
+    def cards_cost(self):
+        """Returns cost of cards list
+
+        :return: cost as float
+        """
+        return sum([col.card_cost for col in self._card_offers_lists])
+
     def add_card_offer(self, card, offer):
         """
         Adds new card to cards list or if such already added, adds only offer info
@@ -164,25 +180,17 @@ class TCGSeller(object):
 
         card_offers_list.add_offer(offer)
 
+    def get_card_offers(self, card):
+        """
+        Returns cards offers list for specified card or returns None if there no offers
+        """
+        return ext.get_first(self._card_offers_lists, lambda c: c.card.name == card.name)
+
     def has_all_cards(self, cards):
         """
         Returns True if all cards is available and False if not
         """
-        return self.get_available_cards_num() == sum([c.number for c in cards])
-
-    def get_available_cards_num(self):
-        """Returns number of cards that could be bought from this seller
-
-        :return: number as int
-        """
-        return sum([col.available_card_number for col in self._card_offers_lists])
-
-    def calculate_cards_cost(self):
-        """Returns cost of cards list
-
-        :return: cost as float
-        """
-        return sum([col.card_cost for col in self._card_offers_lists])
+        return self.available_cards_num == sum([c.number for c in cards])
 
     def __hash__(self):
         return hash((self.name, self.url))

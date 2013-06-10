@@ -16,13 +16,11 @@
                     {% set anchor = seller.name|idfy %}
                     <div class="accordion-heading">
                         <a class="accordion-toggle" data-toggle="collapse" data-parent="#{{ id }}-sellersacc" href="#{{ id + '-' + anchor }}">
-                            {% set cost = seller.calculate_cards_cost() %}
-                            {% set available = seller.get_available_cards_num() %}
                             <span class="pull-left">{{ seller.name }}</span>
                             <span class="pull-right">
                                 need: <strong>{{ '%d'|format(cardsSum) }}</strong>
-                                available: <strong>{{ '%d'|format(available) }}</strong>
-                                cost: <strong>${{ '%0.2f'|format(cost) }}</strong>
+                                available: <strong>{{ '%d'|format(seller.available_cards_num) }}</strong>
+                                cost: <strong>${{ '%0.2f'|format(seller.cards_cost) }}</strong>
                             </span>
                             <div class="clearfix"></div>
                         </a>
@@ -48,22 +46,32 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                {% for col in seller.card_offers_lists %}
-                                    <tr>
-                                        <td class="text-middle" rowspan="{{ col.offers|length + 1 }}">
-                                            <a href="{{ col.card.info.url }}">{{ col.card.name }}</a>
-                                        </td>
-                                        <td class="text-center text-middle" rowspan="{{ col.offers|length + 1 }}">
-                                            {{ col.card.number }}
-                                        </td>
-                                    </tr>
-                                    {% for offer in col.offers %}
-                                        <tr>
-                                            <td class="text-center">{{ offer.condition }}</td>
-                                            <td class="text-center">{{ offer.number }}</td>
-                                            <td class="text-center">{{ offer.price }}</td>
+                                {% for card in cards %}
+                                    {% set col = seller.get_card_offers(card) %}
+                                    {% if col == None %}
+                                        <tr class="error">
+                                            <td class="text-middle"><a href="{{ card.info.url }}">{{ card.name }}</a></td>
+                                            <td class="text-center text-middle">{{ card.number }}</td>
+                                            <td class="text-center" colspan="3">not available</td>
                                         </tr>
-                                    {% endfor %}
+                                    {% else %}
+                                        {% set status = 'warning' if not col.card_is_available else '' %}
+                                        <tr class="{{ status }}">
+                                            <td class="text-middle" rowspan="{{ col.offers|length + 1 }}">
+                                                <a href="{{ col.card.info.url }}">{{ col.card.name }}</a>
+                                            </td>
+                                            <td class="text-center text-middle" rowspan="{{ col.offers|length + 1 }}">
+                                                {{ col.card.number }}
+                                            </td>
+                                        </tr>
+                                        {% for offer in col.offers %}
+                                            <tr class="{{ status }}">
+                                                <td class="text-center">{{ offer.condition }}</td>
+                                                <td class="text-center">{{ offer.number }}</td>
+                                                <td class="text-center">{{ offer.price }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% endif %}
                                 {% endfor %}
                                 </tbody>
                             </table>
