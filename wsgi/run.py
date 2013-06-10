@@ -60,12 +60,8 @@ def stats(token):
     return render_template('upload_stats.html', token=token, cards=cards)
 
 
-@app.route('/<token>/shop/tcg/av', defaults={'list_type': 'av'}, methods=['GET'])
-@app.route('/<token>/shop/tcg/<list_type>', methods=['GET'])
-def tcg(token, list_type):
-    if list_type not in ['av', 'al']:
-        list_type = 'av'
-
+@app.route('/<token>/shop/tcg', methods=['GET'])
+def tcg(token):
     cards = db.get_cards(token, only_resolved=True)
     sellers = scraper.get_tcg_sellers_async(cards)
 
@@ -74,7 +70,7 @@ def tcg(token, list_type):
     sellers_al = sorted(sellers, key=lambda s: s.available_cards_num, reverse=True)
 
     return render_template('cards_tcg_sellers.html', token=token, cards=cards,
-                           sellers_groups={'av': sellers_av[:10], 'al': sellers_al[:30]}, list_type=list_type)
+                           sellers_groups={'av': sellers_av[:10], 'al': sellers_al[:30]})
 
 
 @app.route('/delete', methods=['POST'])
