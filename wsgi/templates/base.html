@@ -13,8 +13,17 @@
     {% block head %}{% endblock %}
 </head>
 <body>
-    <div class="container-fluid content">
-        {% block content %}{% endblock %}
+    <div id="wrap">
+        <div class="container-fluid content">
+            {% block content %}{% endblock %}
+        </div>
+        <div id="push"></div>
+    </div>
+    <div id="footer">
+        <div class="content text-center muted">
+            Copyright &copy; 2013
+            <a href="mailto:pavel.ritikov@gmail.com">wurdum</a>
+        </div>
     </div>
 </body>
 </html>

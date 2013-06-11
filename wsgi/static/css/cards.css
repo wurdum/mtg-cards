@@ -1,3 +1,34 @@
+html,
+body {
+    height: 100%;
+}
+
+#wrap {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -30px;
+}
+
+#footer {
+    height: 30px;
+}
+
+#push {
+    height: 45px;
+}
+
+#footer { }
+
+@media (max-width: 767px) {
+    #footer {
+        margin-left: -20px;
+        margin-right: -20px;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
 .center-box {
     margin: 60px auto 0 auto;
     width: 600px;
@@ -10,8 +41,12 @@
 
 .content {
     width: 1200px;
-    margin: 30px auto 0 auto;
+    margin: 0 auto;
     float: none;
+}
+
+#wrap .content {
+    padding-top: 20px;
 }
 
 ul.unstyled li.spread-text {
