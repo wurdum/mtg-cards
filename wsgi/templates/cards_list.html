@@ -26,11 +26,11 @@
                     <table class="table table-bordered table-striped pull-right">
                         <tr>
                             <th>Low:</th>
-                            <td>${{ card|price('low') }}</td>
+                            <td>${{ '%0.2f'|format(card|price('low')) }}</td>
                             <th>Mid:</th>
-                            <td>${{ card|price('mid') }}</td>
+                            <td>${{ '%0.2f'|format(card|price('mid')) }}</td>
                             <th>High:</th>
-                            <td>${{ card|price('high') }}</td>
+                            <td>${{ '%0.2f'|format(card|price('high')) }}</td>
                         </tr>
                     </table>
                 </div>

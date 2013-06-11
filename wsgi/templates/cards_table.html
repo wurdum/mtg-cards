@@ -32,9 +32,9 @@
                     {% endfor %}
                 </div>
             </td>
-            <td class="text-center text-middle">${{ card|price('low') }}</td>
-            <td class="text-center text-middle">${{ card|price('mid') }}</td>
-            <td class="text-center text-middle">${{ card|price('high') }}</td>
+            <td class="text-center text-middle">${{ '%0.2f'|format(card|price('low')) }}</td>
+            <td class="text-center text-middle">${{ '%0.2f'|format(card|price('mid')) }}</td>
+            <td class="text-center text-middle">${{ '%0.2f'|format(card|price('high')) }}</td>
         </tr>
         {% endfor %}
     </tbody>
