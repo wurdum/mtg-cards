@@ -1,0 +1,42 @@
+{% extends 'cards_base.html' %}
+{% block cards_list %}
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th rowspan="2">name</th>
+            <th rowspan="2">need</th>
+            <th colspan="2">offer</th>
+        </tr>
+        <tr>
+            <th>number</th>
+            <th>price</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for card in cards %}
+            {% set offer = offers[card] %}
+            {% if offer %}
+                <tr class="{{ 'warning' if offer.number < card.number else '' }}">
+                    <td class="text-middle">
+                        <p>
+                            <a href="{{ card.info.url }}"><strong>{{ card.name }}</strong></a>
+                            <small><a href="{{ offer.url }}">[at SpellShop]</a></small>
+                        </p>
+                    </td>
+                    <td class="text-center text-middle">{{ card.number }}</td>
+                    <td class="text-center text-middle">{{ offer.number }}</td>
+                    <td class="text-center text-middle">{{ offer.price }}</td>
+                </tr>
+            {% else %}
+                <tr class="error">
+                    <td class="text-middle" rowspan="{{ card_offers|length + 1 }}">
+                        <p><a href="{{ card.info.url }}"><strong>{{ card.name }}</strong></a></p>
+                    </td>
+                    <td class="text-center text-middle">{{ card.number }}</td>
+                    <td class="text-center text-middle" colspan="3">not available</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

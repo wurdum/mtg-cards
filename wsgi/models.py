@@ -208,7 +208,7 @@ class TCGSeller(object):
         return self.name + ' ' + len(self._card_offers_lists)
 
 
-class BuyMagicOffer(object):
+class ShopOffer(object):
     """
     Represents card offer from www.buymagic.ua
     """

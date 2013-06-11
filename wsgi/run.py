@@ -82,6 +82,14 @@ def bm(token):
     return render_template('cards_bm_offers.html', token=token, cards=cards, offers=offers)
 
 
+@app.route('/<token>/shop/ss', methods=['GET'])
+def ss(token):
+    cards = db.get_cards(token, only_resolved=True)
+    offers = scraper.get_spellshop_offers_async(cards)
+
+    return render_template('cards_ss_offers.html', token=token, cards=cards, offers=offers)
+
+
 @app.route('/delete', methods=['POST'])
 def delete():
     if 'token' in request.form:

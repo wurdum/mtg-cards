@@ -17,7 +17,7 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tools <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li><a href="{{ url_for('tcg', token=token) }}">Find seller at TCHPlayer</a></li>
-                        <li><a href="#">Find cards at spellshop</a></li>
+                        <li><a href="{{ url_for('ss', token=token) }}">Find cards at spellshop</a></li>
                         <li><a href="{{ url_for('bm', token=token) }}">Find cards at buymagic</a></li>
                     </ul>
                 </li>

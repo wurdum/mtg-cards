@@ -1,3 +1,4 @@
+# coding=utf-8
 import random
 import string
 import cStringIO
@@ -7,6 +8,17 @@ import urlparse
 
 def get_token(size=6, chars=string.ascii_lowercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
+
+
+def uah_to_dollar(uah):
+    """Converts uah price to dollar representation
+
+    :param uah: price in format 999.99 грн.
+    :return: price in format $999.99
+    """
+    uah_float_price = float(uah.split()[0])
+    dollar_float_price = uah_float_price / 8.0
+    return '$%0.2f' % dollar_float_price
 
 
 def get_first(iterable, func, default=None):
