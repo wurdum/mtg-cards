@@ -39,7 +39,7 @@ def get_cards(token, only_resolved=False):
     return filter(lambda c: c.has_info and c.has_prices, cards) if only_resolved else cards
 
 
-def get_last_cards_lists():
+def get_last_cards_lists(show_private=False, lists_number=5):
     """Gets all cards lists that present in db
 
     :return: returns list of models.CardList objects
@@ -48,7 +48,8 @@ def get_last_cards_lists():
     db = connection[DB]
 
     cards_lists = []
-    for cl in db.list.find().sort('$natural', -1).limit(5):
+    query_filter = {'list_type': 'public'} if not show_private else {}
+    for cl in db.list.find(query_filter).sort('$natural', -1).limit(lists_number):
         token = cl['token']
         cards = [tocard(dc) for dc in cl['cards']]
 
@@ -60,14 +61,14 @@ def get_last_cards_lists():
     return cards_lists
 
 
-def save_cards(token, cards):
+def save_cards(token, list_type, cards):
     """
     Saves cards list to db with token as key
     """
     connection = pymongo.MongoClient(MONGO_URL)
     db = connection[DB]
 
-    db.list.insert({'token': token, 'cards': [todict(c) for c in cards]})
+    db.list.insert({'token': token, 'list_type': list_type, 'cards': [todict(c) for c in cards]})
 
 
 def delete_cards(token):

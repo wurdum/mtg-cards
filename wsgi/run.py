@@ -1,4 +1,3 @@
-import itertools
 from flask import Flask, render_template, request, url_for, redirect
 import ext
 import scraper
@@ -17,6 +16,7 @@ def index():
 @app.route('/', methods=['POST'])
 def upload():
     f = request.files['cards_list']
+    list_type = ext.result_or_default(lambda: request.form['list_type'], default='public', prevent_empty=True)
     if f:
         token = db.get_unique_token()
 
@@ -26,7 +26,7 @@ def upload():
         except:
             return redirect(url_for('error'))
         else:
-            db.save_cards(token, cards)
+            db.save_cards(token, list_type, cards)
 
             if len([c for c in cards if not c.has_info or not c.has_prices]) > 0:
                 return redirect(url_for('stats', token=token))
@@ -88,6 +88,12 @@ def ss(token):
     offers = scraper.get_spellshop_offers_async(cards)
 
     return render_template('cards_ss_offers.html', token=token, cards=cards, offers=offers)
+
+
+@app.route('/privateclists', methods=['GET'])
+def pcl():
+    return render_template('cards_private_lists.html',
+                           cards_lists=db.get_last_cards_lists(show_private=True, lists_number=100))
 
 
 @app.route('/delete', methods=['POST'])

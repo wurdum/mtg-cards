@@ -14,7 +14,12 @@
     </div>
     {% endif %}
     <form action="{{ url_for('index') }}" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="list_type">
         <p>
+            <div class="btn-group" data-toggle="buttons-radio">
+                <button name="public" type="button" class="btn btn-info active" data-type="public">Public</button>
+                <button name="private" type="button" class="btn btn-info" data-type="private">Private</button>
+            </div>
             <input type="file" title="Select file" name="cards_list">
             <input type="submit" value="Submit" class="btn btn-primary pull-right">
         </p>
@@ -32,23 +37,24 @@ Dragonmaster Outcast  4
 Channel   1
 Desert  3</pre>
         </dd>
-        <dt>Last cards lists:</dt>
+        {% if cards_lists|length > 0 %}
+        <dt>Last public cards lists:</dt>
         <dd>
             <table class="table table-bordered table-striped">
                 <thead>
-                    <tr>
-                        <th rowspan="2">token</th>
-                        <th rowspan="2">number</th>
-                        <th colspan="3">price</th>
-                    </tr>
-                    <tr>
-                        <th>low</th>
-                        <th>mid</th>
-                        <th>high</th>
-                    </tr>
+                <tr>
+                    <th rowspan="2">token</th>
+                    <th rowspan="2">number</th>
+                    <th colspan="3">price</th>
+                </tr>
+                <tr>
+                    <th>low</th>
+                    <th>mid</th>
+                    <th>high</th>
+                </tr>
                 </thead>
                 <tbody>
-                    {% for cards_list in cards_lists %}
+                {% for cards_list in cards_lists %}
                     <tr>
                         <td class="text-center">
                             <a href="{{ url_for('cards', token=cards_list.token) }}">{{ cards_list.token }}</a>
@@ -58,15 +64,21 @@ Desert  3</pre>
                         <td class="text-center">${{ cards_list.price['mid'] }}</td>
                         <td class="text-center">${{ cards_list.price['high'] }}</td>
                     </tr>
-                    {% endfor %}
+                {% endfor %}
                 </tbody>
             </table>
         </dd>
+        {% endif %}
     </dl>
 </div>
 <script>
     $(function(){
         window.prettyPrint && prettyPrint()
+
+        $('input[type="submit"]').on('click', function() {
+            $('input[name="list_type"]').val($('div.btn-group button.active').attr('data-type'));
+            $('form').submit();
+        });
     })
 </script>
 {% endblock %}
