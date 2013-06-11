@@ -22,7 +22,7 @@
             {% set is_available = offers_number >= card.number %}
             <tr class="{{ 'warning' if not is_available else '' }}">
                 <td class="text-middle" rowspan="{{ card_offers|length + 1 }}">
-                    <p><a href="{{ card.info.url }}" >{{ card.name }} [{{ card.number }}]</a></p>
+                    <p><a href="{{ card.info.url }}" >{{ card.name }}</a></p>
                     <small><a href="{{ first_offer.url }}">at BuyMagic</a></small>
                 </td>
                 <td class="text-center text-middle" rowspan="{{ card_offers|length + 1 }}">{{ card.number }}</td>
