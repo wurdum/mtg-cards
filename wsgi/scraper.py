@@ -110,6 +110,14 @@ class MagiccardsScraper(object):
             page = urllib2.urlopen(page_url).read()
             soup = BeautifulSoup(page, from_encoding='utf-8')
 
+            if not self._is_card_page(soup):
+                hint = self._try_get_hint(soup)
+                if hint is not None:
+                    page_url = ext.url_join(ext.get_domain(page_url), hint['href'])
+                    self.name = hint.text
+                    page = urllib2.urlopen(page_url).read()
+                    soup = BeautifulSoup(page, from_encoding='utf-8')
+
             info = self._get_card_info(soup)
             price = self._get_prices(soup)
 
@@ -119,6 +127,23 @@ class MagiccardsScraper(object):
             return models.Card(self.name, int(self.number))
         else:
             return models.Card(self.name, int(self.number), info=card_info, prices=card_prices)
+
+    def _is_card_page(self, soup):
+        """Parses soup page and find out is page has card info
+
+        :param soup: soup page from www.magiccards.info
+        :return: boolean value
+        """
+        return len(soup.find_all('table')) > 2
+
+    def _try_get_hint(self, soup):
+        """Parses soup page and tries find out card hint
+
+        :param soup: soup page from www.magiccards.info
+        :return: tag 'a' with hint
+        """
+        hints_list = soup.find_all('li')
+        return hints_list[0].contents[0] if hints_list else None
 
     def _get_card_info(self, soup):
         """Parses soup page and returns dict with card info
@@ -327,7 +352,8 @@ class SpellShopScrapper(object):
         :param card: models.Card object
         :return: returns tuple (models.Card, models.ShopOffer)
         """
-        search_url = SpellShopScrapper.BASE_SEARCH_URL.replace('{card.name}', urllib2.quote(card.name))
+        encoded_card_name = urllib2.quote(card.name.replace('\'', ''))
+        search_url = SpellShopScrapper.BASE_SEARCH_URL.replace('{card.name}', encoded_card_name)
         page = urllib2.urlopen(search_url).read()
         soup = BeautifulSoup(page, from_encoding='utf-8')
 
