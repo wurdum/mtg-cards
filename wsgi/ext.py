@@ -1,5 +1,6 @@
 # coding=utf-8
 import random
+import re
 import string
 import cStringIO
 import itertools
@@ -8,6 +9,30 @@ import urlparse
 
 def get_token(size=6, chars=string.ascii_lowercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
+
+
+def uni(value):
+    """
+    Makes input string unicode, clears it and lowers
+    """
+    if isinstance(value, str):
+        value = unicode(value, 'utf-8')
+    return value.strip().lower()
+
+
+def urlEncodeNonAscii(b):
+    """
+    Replaces non ascii symbols with encoded
+    """
+    return re.sub('[\x80-\xFF]', lambda c: '%%%02x' % ord(c.group(0)), b)
+
+
+def iriToUri(iri):
+    """
+    Encodes url as special ascii
+    """
+    parts = urlparse.urlparse(iri)
+    return urlparse.urlunparse(urlEncodeNonAscii(part.encode('utf-8')) for parti, part in enumerate(parts))
 
 
 def uah_to_dollar(uah):

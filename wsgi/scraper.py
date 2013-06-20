@@ -1,7 +1,9 @@
 # coding=utf-8
+import gzip
 import re
 import itertools
 import eventlet
+from StringIO import StringIO
 from eventlet.green import urllib2
 from bs4 import BeautifulSoup
 import models
@@ -77,6 +79,27 @@ def get_spellshop_offers_async(cards):
     return offers
 
 
+def openurl(url):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',
+        'Accept-Language': 'ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4',
+        'Accept-Encoding': 'gzip,deflate',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Cache-Control': 'max-age=0'
+    }
+
+    opener = urllib2.build_opener()
+    opener.addheaders = headers.items()
+    response = opener.open(ext.iriToUri(url))
+
+    if response.info().get('Content-Encoding') == 'gzip':
+        buf = StringIO(response.read())
+        response = gzip.GzipFile(fileobj=buf)
+
+    page = response.read()
+    return page
+
+
 class MagiccardsScraper(object):
     """
     Parses cards info using www.magiccards.info resource
@@ -107,7 +130,7 @@ class MagiccardsScraper(object):
         page_url = self.MAGICCARDS_BASE_URL + self.MAGICCARDS_QUERY_TMPL % urllib2.quote(self.name)
 
         try:
-            page = urllib2.urlopen(page_url).read()
+            page = openurl(page_url)
             soup = BeautifulSoup(page, from_encoding='utf-8')
 
             if not self._is_card_page(soup):
@@ -115,7 +138,7 @@ class MagiccardsScraper(object):
                 if hint is not None:
                     page_url = ext.url_join(ext.get_domain(page_url), hint['href'])
                     self.name = hint.text
-                    page = urllib2.urlopen(page_url).read()
+                    page = openurl(page_url)
                     soup = BeautifulSoup(page, from_encoding='utf-8')
 
             info = self._get_card_info(soup)
@@ -230,7 +253,7 @@ class TCGPlayerScrapper(object):
 
         :return: dictionary {sid, tcg card url, low, mid, high}
         """
-        tcg_response = urllib2.urlopen(self.brief_url).read()
+        tcg_response = openurl(self.brief_url)
         html_response = tcg_response.replace('\'+\'', '').replace('\\\'', '"')[16:][:-3]
 
         tcg_soup = BeautifulSoup(html_response)
@@ -312,7 +335,7 @@ class BuyMagicScrapper(object):
         :return: returns tuple (models.Card, list of models.ShopOffer)
         """
         search_url = BuyMagicScrapper.BASE_SEARCH_URL.replace('{card.name}', urllib2.quote(card.name))
-        page = urllib2.urlopen(search_url).read()
+        page = openurl(search_url)
         page = page.replace('<link rel="stylesheet" href="/jquery.fancybox-1.3.0.css" type="text/css" media="screen">',
                             '').replace('"title=', '" title=')
         soup = BeautifulSoup(page, from_encoding='utf-8')
@@ -337,6 +360,7 @@ class BuyMagicScrapper(object):
 
         return card, offers
 
+
 class SpellShopScrapper(object):
     """
     Parses search results from www.spellshop.com.ua
@@ -354,7 +378,7 @@ class SpellShopScrapper(object):
         """
         encoded_card_name = urllib2.quote(card.name.replace('\'', ''))
         search_url = SpellShopScrapper.BASE_SEARCH_URL.replace('{card.name}', encoded_card_name)
-        page = urllib2.urlopen(search_url).read()
+        page = openurl(search_url)
         soup = BeautifulSoup(page, from_encoding='utf-8')
 
         offer = None
