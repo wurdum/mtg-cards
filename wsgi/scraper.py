@@ -1,4 +1,5 @@
 # coding=utf-8
+import difflib
 import gzip
 import re
 import itertools
@@ -128,28 +129,41 @@ class MagiccardsScraper(object):
         :return: models.Card object
         """
         page_url = self.MAGICCARDS_BASE_URL + self.MAGICCARDS_QUERY_TMPL % urllib2.quote(self.name)
+        page = openurl(page_url)
+        soup = BeautifulSoup(page, from_encoding='utf-8')
 
-        try:
+        if not self._is_card_page(soup):
+            hint = self._try_get_hint(self.name, soup)
+            if hint is None:
+                return models.Card(self.name, int(self.number))
+
+            self.name = hint.text
+            page_url = ext.url_join(ext.get_domain(page_url), hint['href'])
             page = openurl(page_url)
-            soup = BeautifulSoup(page, from_encoding='utf-8')
+            soup = BeautifulSoup(page)
 
-            if not self._is_card_page(soup):
-                hint = self._try_get_hint(soup)
-                if hint is not None:
-                    page_url = ext.url_join(ext.get_domain(page_url), hint['href'])
-                    self.name = hint.text
-                    page = openurl(page_url)
-                    soup = BeautifulSoup(page, from_encoding='utf-8')
+        # if card is found, but it's not english
+        if not self._is_en(soup):
+            en_link_tag = list(soup.find_all('table')[3].find_all('td')[2].find('img', alt='English').next_elements)[1]
+            self.name = en_link_tag.text
+            page_url = ext.url_join(ext.get_domain(page_url), en_link_tag['href'])
+            page = openurl(page_url)
+            soup = BeautifulSoup(page)
 
-            info = self._get_card_info(soup)
-            price = self._get_prices(soup)
+        info = self._get_card_info(soup)
+        price = self._get_prices(soup)
 
-            card_info = models.CardInfo(**info)
-            card_prices = models.CardPrices(**price)
-        except:
-            return models.Card(self.name, int(self.number))
-        else:
-            return models.Card(self.name, int(self.number), info=card_info, prices=card_prices)
+        card_info = models.CardInfo(**info)
+        card_prices = models.CardPrices(**price)
+
+        return models.Card(self.name, int(self.number), info=card_info, prices=card_prices)
+
+    def _is_en(self, soup):
+        """
+        Checks if found card is en
+        """
+        en_link = list(soup.find_all('table')[3].find_all('td')[2].find('img', alt='English').next_elements)[1]
+        return en_link.name == 'b'
 
     def _is_card_page(self, soup):
         """Parses soup page and find out is page has card info
@@ -159,14 +173,21 @@ class MagiccardsScraper(object):
         """
         return len(soup.find_all('table')) > 2
 
-    def _try_get_hint(self, soup):
-        """Parses soup page and tries find out card hint
+    def _try_get_hint(self, name, soup):
+        """Parses soup page and tries find out card hint.
+        Selects hint that has max affinity with base card name.
 
+        :param name: cards name
         :param soup: soup page from www.magiccards.info
         :return: tag 'a' with hint
         """
-        hints_list = soup.find_all('li')
-        return hints_list[0].contents[0] if hints_list else None
+        hints_list = []
+        for hint_li in soup.find_all('li'):
+            hint_tag = hint_li.contents[0]
+            resemble_rate = difflib.SequenceMatcher(a=ext.uni(name), b=ext.uni(hint_li.contents[0].text)).ratio()
+            hints_list.append({'a_tag': hint_tag, 'rate': resemble_rate})
+
+        return sorted(hints_list, key=lambda h: h['rate'], reverse=True)[0]['a_tag'] if hints_list else None
 
     def _get_card_info(self, soup):
         """Parses soup page and returns dict with card info
