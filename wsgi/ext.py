@@ -133,15 +133,29 @@ def read_file(stream):
 
     :return: list of tuples (card name, card number)
     """
-
     if isinstance(stream, cStringIO.OutputType):
         full_content = stream.getvalue()
         stripped_lines = [l.strip(' \t\r') for l in full_content.split('\n')]
         cards = [parse_card(card) for card in stripped_lines if card]
 
-        unique_cards = [(key, sum([c['number'] for c in value]))
-                        for key, value in itertools.groupby(cards, key=lambda c: c['name'])]
-
-        return unique_cards
+        return cards
 
     raise IOError('unknown input stream format encountered, type: %s' % type(stream))
+
+
+def merge_pups(cards):
+    """Sums number for the same cards
+
+    :param cards: list of models.Card
+    :return: list of models.Card
+    """
+    unique_cards = set()
+    for card in cards:
+        if card not in unique_cards:
+            unique_cards.add(card)
+        else:
+            for set_card in unique_cards:
+                if set_card == card:
+                    set_card.number += card.number
+
+    return list(unique_cards)

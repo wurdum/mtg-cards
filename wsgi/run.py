@@ -23,6 +23,7 @@ def upload():
         try:
             content = ext.read_file(f.stream)
             cards = scraper.resolve_cards_async(content)
+            cards = ext.merge_pups(cards)
         except:
             return redirect(url_for('error'))
         else:

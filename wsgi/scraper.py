@@ -12,13 +12,16 @@ import ext
 
 
 def resolve_cards_async(content):
-    """Parses card info using MagiccardScrapper in thread for request mode
+    """Parses card info using MagiccardScrapper in thread for request mode and
+    mergers duplicates
 
     :param content: list of (card_name, card_number) tuples
     :return: list of models.Card objects
     """
     pool = eventlet.GreenPool(len(content))
-    return [card for card in pool.imap(MagiccardsScraper.resolve_card, content)]
+    cards = [card for card in pool.imap(MagiccardsScraper.resolve_card, content)]
+
+    return cards
 
 
 def get_tcg_sellers_async(cards):
@@ -120,7 +123,7 @@ class MagiccardsScraper(object):
         :param content_record: (card_name, card_number) tuple
         :return: models.Card object
         """
-        scrapper = MagiccardsScraper(content_record[0], content_record[1])
+        scrapper = MagiccardsScraper(content_record['name'], content_record['number'])
         return scrapper.get_card()
 
     def get_card(self):
