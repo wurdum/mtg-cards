@@ -6,7 +6,7 @@ import itertools
 import eventlet
 from StringIO import StringIO
 from eventlet.green import urllib2
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 import models
 import ext
 
@@ -123,6 +123,9 @@ class MagiccardsScraper(object):
         :param content_record: (card_name, card_number) tuple
         :return: models.Card object
         """
+        if content_record['name'].split()[0].strip().lower() in ['mountain', 'swamp', 'island', 'plains', 'forest']:
+            return None
+
         scrapper = MagiccardsScraper(content_record['name'], content_record['number'])
         return scrapper.get_card()
 
@@ -150,16 +153,60 @@ class MagiccardsScraper(object):
             en_link_tag = list(soup.find_all('table')[3].find_all('td')[2].find('img', alt='English').next_elements)[1]
             self.name = en_link_tag.text
             page_url = ext.url_join(ext.get_domain(page_url), en_link_tag['href'])
-            page = openurl(page_url)
-            soup = BeautifulSoup(page)
 
-        info = self._get_card_info(soup)
-        price = self._get_prices(soup)
+        reda_pages = self._get_redas_urls(page_url)
 
-        card_info = models.CardInfo(**info)
-        card_prices = models.CardPrices(**price)
+        redas = []
+        for reda_page in reda_pages:
+            page = openurl(reda_page['url'])
+            reda_soup = BeautifulSoup(page)
 
-        return models.Card(self.name, int(self.number), info=card_info, prices=card_prices)
+            info = self._get_card_info(reda_soup)
+            price = self._get_prices(reda_soup)
+            if price is None:
+                continue
+
+            card_info = models.CardInfo(**info)
+            card_prices = models.CardPrices(**price)
+
+            redas.append(models.Redaction(reda_page['name'], info=card_info, prices=card_prices))
+
+        return models.Card(self.name, int(self.number), redactions=redas)
+
+    def _get_redas_urls(self, page_url):
+        """Parses card page and finds all available card redactions
+
+        :param page_url: card page url
+        :return: list of dict (reda name, reda url)
+        """
+        page = openurl(page_url)
+        soup = BeautifulSoup(page)
+
+        content_table = soup.find_all('table')[3]
+        redas_td = content_table.find_all('td')[2]
+
+        # if card has second side
+        start_block_index = 1 if len(redas_td.find_all('u')) == 3 else 2
+        redas_block_start = redas_td.find_all('u')[start_block_index]
+
+        tags = []
+        for tag in redas_block_start.next_sibling.next_elements:
+            if not isinstance(tag, Tag):
+                continue
+
+            if tag.name == 'u':
+                break
+
+            if tag.name == 'a':
+                tags.append({'name': tag.text.strip().lower(),
+                             'url': ext.url_join(ext.get_domain(self.MAGICCARDS_BASE_URL), tag['href'])})
+
+            if tag.name == 'b':
+                # remove card type
+                reda_name = tag.text.split('(')[0].strip().lower()
+                tags.append({'name': reda_name, 'url': page_url})
+
+        return tags
 
     def _is_en(self, soup):
         """
@@ -236,12 +283,17 @@ class MagiccardsScraper(object):
         :return: dictionary with prices from TCGPlayer in format {sid, low, mid, high}
         """
         content_table = magic_soup.find_all('table')[3]
-        request_url = content_table.find_all('script')[0]['src']
+        script_block = content_table.find('script')
+        if script_block is None:
+            return None
+
+        request_url = script_block['src']
         sid = ext.get_query_string_params(request_url)['sid']
 
         tcg_scrapper = TCGPlayerScrapper(sid)
+        brief_prices_info = tcg_scrapper.get_brief_info()
 
-        return tcg_scrapper.get_brief_info()
+        return brief_prices_info
 
 
 class TCGPlayerScrapper(object):
@@ -281,9 +333,12 @@ class TCGPlayerScrapper(object):
         html_response = tcg_response.replace('\'+\'', '').replace('\\\'', '"')[16:][:-3]
 
         tcg_soup = BeautifulSoup(html_response)
+        link_container = tcg_soup.find('td', class_='TCGPHiLoLink')
+        if link_container is None:
+            return None
 
         prices = {'sid': self.sid,
-                  'url': ext.get_domain_with_path(tcg_soup.find('td', class_='TCGPHiLoLink').contents[0]['href']),
+                  'url': ext.get_domain_with_path(link_container.contents[0]['href']),
                   'low': str(tcg_soup.find('td', class_='TCGPHiLoLow').contents[1].contents[0]),
                   'mid': str(tcg_soup.find('td', class_='TCGPHiLoMid').contents[1].contents[0]),
                   'high': str(tcg_soup.find('td', class_='TCGPHiLoHigh').contents[1].contents[0])}

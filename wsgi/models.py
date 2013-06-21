@@ -7,11 +7,12 @@ class Card(object):
     Card model with info and prices
     """
 
-    def __init__(self, name, number, info=None, prices=None):
+    def __init__(self, name, number, info=None, prices=None, redactions=None):
         self.name = name
         self.number = number
         self.prices = prices
         self.info = info
+        self.redactions = redactions if redactions else []
 
     @property
     def has_info(self):
@@ -29,6 +30,25 @@ class Card(object):
 
     def __repr__(self):
         return '%s x %d' % (self.name, self.number)
+
+
+class Redaction(object):
+    """
+    Represents card redaction
+    """
+    def __init__(self, name, info=None, prices=None):
+        self.name = name
+        self.info = info
+        self.prices = prices
+
+    def __hash__(self):
+        return hash(self.name)
+
+    def __eq__(self, other):
+        return self.name == other.name
+
+    def __repr__(self):
+        return self.name
 
 
 class CardInfo(object):

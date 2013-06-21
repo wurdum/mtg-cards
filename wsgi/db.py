@@ -86,9 +86,17 @@ def tocard(dict_card):
     """
     Converts dict to card
     """
-    info = models.CardInfo(**dict_card['info']) if 'info' in dict_card and dict_card['info'] else None
-    prices = models.CardPrices(**dict_card['prices']) if 'prices' in dict_card and dict_card['prices'] else None
-    return models.Card(dict_card['name'], dict_card['number'], info=info, prices=prices)
+    redas = [toreda(r) for r in dict_card['redactions']]
+    return models.Card(dict_card['name'], dict_card['number'], redactions=redas)
+
+
+def toreda(dict_reda):
+    """
+    Converts dict to redaction
+    """
+    info = models.CardInfo(**dict_reda['info']) if 'info' in dict_reda and dict_reda['info'] else None
+    prices = models.CardPrices(**dict_reda['prices']) if 'prices' in dict_reda and dict_reda['prices'] else None
+    return models.Redaction(dict_reda['name'], info=info, prices=prices)
 
 
 def todict(obj, classkey=None):
