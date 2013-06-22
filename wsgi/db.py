@@ -36,7 +36,7 @@ def get_cards(token, only_resolved=False):
 
     cards = [tocard(dc) for dc in dict_obj['cards']]
 
-    return filter(lambda c: c.has_info and c.has_prices, cards) if only_resolved else cards
+    return filter(lambda c: c.is_resolved, cards) if only_resolved else cards
 
 
 def get_last_cards_lists(show_private=False, lists_number=5):

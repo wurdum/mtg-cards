@@ -45,7 +45,11 @@ class BasicResolver(object):
         card_name = self.name
         page_url = MAGICCARDS_BASE_URL + MAGICCARDS_QUERY_TMPL % quote(self.name)
 
-        card_name, page_url = self._choose_hint_if_need(card_name, page_url)
+        request_result = self._choose_hint_if_need(card_name, page_url)
+        if request_result is None:
+            return None
+
+        card_name, page_url = request_result
         card_name, page_url = self._change_page_to_en(card_name, page_url)
 
         if page_url is None:

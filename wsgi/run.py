@@ -20,21 +20,17 @@ def upload():
     f = request.files['cards_list']
     list_type = ext.result_or_default(lambda: request.form['list_type'], default='public', prevent_empty=True)
     if f:
+        content = ext.read_file(f.stream)
+        cards = scrapers.resolve_cards_async(content)
+        cards = ext.merge_pups(cards)
+
         token = db.get_unique_token()
+        db.save_cards(token, list_type, cards)
 
-        try:
-            content = ext.read_file(f.stream)
-            cards = scrapers.resolve_cards_async(content)
-            cards = ext.merge_pups(cards)
-        except:
-            return redirect(url_for('error'))
-        else:
-            db.save_cards(token, list_type, cards)
+        if len(filter(lambda c: not c.is_resolved, cards)) > 0:
+            return redirect(url_for('stats', token=token))
 
-            if len([c for c in cards if not c.has_info or not c.has_prices]) > 0:
-                return redirect(url_for('stats', token=token))
-
-            return redirect(url_for('cards', token=token, repr='l'))
+        return redirect(url_for('cards', token=token, repr='l'))
 
     return render_template('upload.html', has_error=True)
 

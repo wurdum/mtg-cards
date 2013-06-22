@@ -23,15 +23,13 @@
     </thead>
     <tbody>
         {% for card in cards %}
-        {% set is_found = card.has_info and card.has_prices %}
         {% set anchor = card.name|urlencode %}
-        <tr class="{% if is_found %}success{% else %}error{% endif %}">
+        <tr class="{% if card.is_resolved %}success{% else %}error{% endif %}">
             <td class="text-center text-middle">{{ card.number }}</td>
             <td class="text-middle"><a href="#{{ anchor }}" name="{{ anchor }}">{{ card.name }} [{{ card.number }}]</a></td>
-            <td>
-                {% if is_found %}
-                    {% if card.has_info %}<small><a href="{{ card.info.url }}">at Magiccards</a></small><br/>{% endif %}
-                    {% if card.has_prices %}<small><a href="{{ card.prices.url }}">at TCGPlayer</a></small>{% endif %}
+            <td class="text-center text-middle">
+                {% if card.is_resolved %}
+                    found <stron>{{ card.redactions|length }}</stron> redactions
                 {% else %}
                     unknown
                 {% endif %}
