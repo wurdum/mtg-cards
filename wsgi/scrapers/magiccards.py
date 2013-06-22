@@ -15,12 +15,13 @@ def resolve_card(content_record):
     :param content_record: dict {card name, card number}
     :return: object models.Card
     """
-    base_resolver = BaseResolver(content_record['name'])
+    base_resolver = BasicResolver(content_record['name'])
     resolve_result = base_resolver.get_name_and_url()
     if resolve_result is None:
         return models.Card(content_record['name'], content_record['number'])
 
     name, url = resolve_result
+
     advanced_resolver = AdvancedResolver(url)
     redactions = advanced_resolver.get_redactions()
     if redactions is None:
@@ -29,7 +30,7 @@ def resolve_card(content_record):
     return models.Card(name, content_record['number'], redactions=redactions)
 
 
-class BaseResolver(object):
+class BasicResolver(object):
     """
     Finds basic page for card and fixes name if needs
     """
@@ -43,44 +44,55 @@ class BaseResolver(object):
         """
         card_name = self.name
         page_url = MAGICCARDS_BASE_URL + MAGICCARDS_QUERY_TMPL % quote(self.name)
-        page = openurl(page_url)
-        soup = BeautifulSoup(page, from_encoding='utf-8')
 
-        if not self._is_card_page(soup):
-            hint = self._try_get_hint(self.name, soup)
-            if hint is None:
-                return None
-
-            card_name = hint.text
-            page_url = ext.url_join(ext.get_domain(page_url), hint['href'])
-            page = openurl(page_url)
-            soup = BeautifulSoup(page)
-
-        # if card is found, but it's not english
-        if not self._is_en(soup):
-            en_link_tag = list(soup.find_all('table')[3].find_all('td')[2].find('img', alt='English').next_elements)[1]
-            card_name = en_link_tag.text
-            page_url = ext.url_join(ext.get_domain(page_url), en_link_tag['href'])
+        card_name, page_url = self._choose_hint_if_need(card_name, page_url)
+        card_name, page_url = self._change_page_to_en(card_name, page_url)
 
         if page_url is None:
             return None
 
         return card_name, page_url
 
-    def _is_en(self, soup):
-        """
-        Checks if found card is en
-        """
-        en_link = list(soup.find_all('table')[3].find_all('td')[2].find('img', alt='English').next_elements)[1]
-        return en_link.name == 'b'
+    def _choose_hint_if_need(self, name, url):
+        """Selects correct hint and updates name and url for card.
+        If card is already resolved correctly, returns name and url from input.
 
-    def _is_card_page(self, soup):
-        """Parses soup page and find out is page has card info
-
-        :param soup: soup page from www.magiccards.info
-        :return: boolean value
+        :param name: card name
+        :param url: card url
+        :return: tuple (card name, card url)
         """
-        return len(soup.find_all('table')) > 2
+        page = openurl(url)
+        soup = BeautifulSoup(page)
+
+        if len(soup.find_all('table')) > 2:
+            return name, url
+
+        hint = self._try_get_hint(self.name, soup)
+        if hint is None:
+            return None
+
+        name = hint.text
+        url = ext.url_join(ext.get_domain(url), hint['href'])
+
+        return name, url
+
+    def _change_page_to_en(self, name, url):
+        """If current url leads to not en page, changes to en and updates card name.
+
+        :param name: card name
+        :param url: card url
+        :return: tuple (card name, card url)
+        """
+        page = openurl(url)
+        soup = BeautifulSoup(page)
+        en_link_tag = list(soup.find_all('table')[3].find_all('td')[2].find('img', alt='English').next_elements)[1]
+        if en_link_tag.name == 'b':
+            return name, url
+
+        name = en_link_tag.text
+        url = ext.url_join(ext.get_domain(url), en_link_tag['href'])
+
+        return name, url
 
     def _try_get_hint(self, name, soup):
         """Parses soup page and tries find out card hint.
