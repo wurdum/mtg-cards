@@ -183,8 +183,7 @@ class AdvancedResolver(object):
         """
         content_table = soup.find_all('table')[3]
         return {'url': self._get_url(content_table),
-                'img_url': self._get_img_url(content_table),
-                'description': None}
+                'img_url': self._get_img_url(content_table)}
 
     def _get_url(self, table):
         """Parses info table

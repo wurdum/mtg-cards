@@ -7,20 +7,14 @@ class Card(object):
     Card model with info and prices
     """
 
-    def __init__(self, name, number, info=None, prices=None, redactions=None):
+    def __init__(self, name, number, redactions=None):
         self.name = name
         self.number = number
-        self.prices = prices
-        self.info = info
         self.redactions = redactions if redactions else []
 
     @property
-    def has_info(self):
-        return self.info is not None
-
-    @property
-    def has_prices(self):
-        return self.prices is not None
+    def is_resolved(self):
+        return self.redactions is not None and self.redactions
 
     def __hash__(self):
         return hash(self.name)
@@ -56,10 +50,9 @@ class CardInfo(object):
     Card info from www.magiccards.com
     """
 
-    def __init__(self, url, img_url, description):
+    def __init__(self, url, img_url):
         self.url = url
         self.img_url = img_url
-        self.description = description
 
     def __repr__(self):
         return self.url
