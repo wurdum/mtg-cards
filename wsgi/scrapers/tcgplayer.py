@@ -3,6 +3,7 @@ import re
 from bs4 import BeautifulSoup
 import ext
 import models
+import filters
 from scrapers.helpers import openurl
 
 BRIEF_BASE_URL = 'http://partner.tcgplayer.com/x3/mchl.ashx?pk=MAGCINFO&sid='
@@ -49,9 +50,9 @@ class TCGPlayerScrapper(object):
 
         prices = {'sid': self.sid,
                   'url': ext.get_domain_with_path(link_container.contents[0]['href']),
-                  'low': ext.uni(tcg_soup.find('td', class_='TCGPHiLoLow').contents[1].contents[0]),
-                  'mid': ext.uni(tcg_soup.find('td', class_='TCGPHiLoMid').contents[1].contents[0]),
-                  'high': ext.uni(tcg_soup.find('td', class_='TCGPHiLoHigh').contents[1].contents[0])}
+                  'low': filters.price_str_to_float(ext.uni(tcg_soup.find('td', class_='TCGPHiLoLow').contents[1].contents[0])),
+                  'mid': filters.price_str_to_float(ext.uni(tcg_soup.find('td', class_='TCGPHiLoMid').contents[1].contents[0])),
+                  'high': filters.price_str_to_float(ext.uni(tcg_soup.find('td', class_='TCGPHiLoHigh').contents[1].contents[0]))}
 
         return prices
 
@@ -75,7 +76,7 @@ class TCGPlayerScrapper(object):
                     lambda: ext.uni(offer_td.find('span', class_='ratingHeading').find('a').contents[0]),
                     default='')
                 number = int(block.find('td', class_='quantity').text.strip())
-                price = ext.uni(block.find('td', class_='price').contents[0])
+                price = filters.price_str_to_float(ext.uni(block.find('td', class_='price').contents[0]))
                 condition = ext.uni(block.find('td', class_='condition').find('a').contents[0])
 
                 sellers_offers.append({'seller': models.TCGSeller(name, url, rating, sales),

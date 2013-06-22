@@ -2,6 +2,7 @@
 from bs4 import BeautifulSoup
 import models
 import ext
+import filters
 from scrapers.helpers import openurl, quote
 
 BASE_SEARCH_URL = 'http://www.buymagic.com.ua/edition/?color=-1&type=-1&rare=-1&id=-1&' \
@@ -30,7 +31,7 @@ def get_offers(card):
 
         for td_list in [offer_tr.find_all('td') for offer_tr in price_table.find_all('tr')]:
             type = 'common' if ext.uni(td_list[0].find('b')) == 'Обычный'.decode('utf-8') else 'foil'
-            price = ext.uni(ext.uah_to_dollar(td_list[1]))
+            price = filters.price_str_to_float(ext.uni(ext.uah_to_dollar(td_list[1])))
             number = len(td_list[2].find_all('option'))
 
             offers.append(models.ShopOffer(card, url, number, price, type=type))
