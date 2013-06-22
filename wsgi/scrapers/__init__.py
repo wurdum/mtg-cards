@@ -76,6 +76,3 @@ def get_spellshop_offers_async(cards):
         offers[card] = offer
 
     return offers
-
-
-
