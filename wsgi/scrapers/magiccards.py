@@ -126,8 +126,8 @@ class AdvancedResolver(object):
         reda_pages = self._get_redas_urls(self.url)
 
         redas = []
-        for reda_page in reda_pages:
-            page = openurl(reda_page['url'])
+        for name, url in reda_pages:
+            page = openurl(url)
             reda_soup = BeautifulSoup(page)
 
             info = self._get_card_info(reda_soup)
@@ -138,7 +138,7 @@ class AdvancedResolver(object):
             card_info = models.CardInfo(**info)
             card_prices = models.CardPrices(**price)
 
-            redas.append(models.Redaction(reda_page['name'], info=card_info, prices=card_prices))
+            redas.append(models.Redaction(name, info=card_info, prices=card_prices))
 
         return redas
 
@@ -167,13 +167,11 @@ class AdvancedResolver(object):
                 break
 
             if tag.name == 'a':
-                tags.append({'name': tag.text.strip().lower(),
-                             'url': ext.url_join(ext.get_domain(MAGICCARDS_BASE_URL), tag['href'])})
+                tags.append((tag.text.strip().lower(), ext.url_join(ext.get_domain(MAGICCARDS_BASE_URL), tag['href'])))
 
             if tag.name == 'b':
-                # remove card type
-                reda_name = tag.text.split('(')[0].strip().lower()
-                tags.append({'name': reda_name, 'url': page_url})
+                # remove card type in parentheses like (myth rare)
+                tags.append((tag.text.split('(')[0].strip().lower(), page_url))
 
         return tags
 
@@ -186,7 +184,7 @@ class AdvancedResolver(object):
         content_table = soup.find_all('table')[3]
         return {'url': self._get_url(content_table),
                 'img_url': self._get_img_url(content_table),
-                'description': self._get_description(content_table)}
+                'description': None}
 
     def _get_url(self, table):
         """Parses info table
@@ -204,16 +202,6 @@ class AdvancedResolver(object):
         """
         return table.find_all('img')[0]['src']
 
-    def _get_description(self, table):
-        """Parses info table
-
-        :param table: info table at www.magiccards.info
-        :return: list of paragraphs of card's description
-        """
-        dirty_descr = str(table.find_all('p', class_='ctext')[0].contents[0])
-        clean_descr = dirty_descr.replace('<b>', '').replace('</b>', '').replace('</br>', '').split('<br><br>')
-        return clean_descr
-
     def _get_prices(self, magic_soup):
         """Parses prices by TCGPlayer card sid
 
@@ -230,5 +218,7 @@ class AdvancedResolver(object):
 
         tcg_scrapper = TCGPlayerScrapper(sid)
         brief_prices_info = tcg_scrapper.get_brief_info()
+        if brief_prices_info is None:
+            return None
 
         return brief_prices_info
