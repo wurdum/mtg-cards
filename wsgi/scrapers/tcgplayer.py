@@ -5,17 +5,17 @@ import ext
 import models
 from scrapers.helpers import openurl
 
+BRIEF_BASE_URL = 'http://partner.tcgplayer.com/x3/mchl.ashx?pk=MAGCINFO&sid='
+FULL_BASE_URL = 'http://store.tcgplayer.com/productcatalog/product/getpricetable' \
+                '?captureFeaturedSellerData=True&pageSize=50&productId='
+FULL_URL_COOKIE = {'Cookie': 'SearchCriteria=WantGoldStar=False&MinRating=0&MinSales='
+                             '&magic_MinQuantity=1&GameName=Magic'}
+
 
 class TCGPlayerScrapper(object):
     """
     Parses card prices from TCGPlayer using its sid
     """
-
-    BRIEF_BASE_URL = 'http://partner.tcgplayer.com/x3/mchl.ashx?pk=MAGCINFO&sid='
-    FULL_BASE_URL = 'http://store.tcgplayer.com/productcatalog/product/getpricetable' \
-                    '?captureFeaturedSellerData=True&pageSize=50&productId='
-    FULL_URL_COOKIE = {'Cookie': 'SearchCriteria=WantGoldStar=False&MinRating=0&MinSales='
-                                 '&magic_MinQuantity=1&GameName=Magic'}
 
     def __init__(self, sid):
         self.sid = sid
@@ -25,14 +25,14 @@ class TCGPlayerScrapper(object):
         """
         Url to summary card prices
         """
-        return self.BRIEF_BASE_URL + self.sid
+        return BRIEF_BASE_URL + self.sid
 
     @property
     def full_url(self):
         """
         Url to table with seller <-> count <-> price data
         """
-        return self.FULL_BASE_URL + self.sid
+        return FULL_BASE_URL + self.sid
 
     def get_brief_info(self):
         """Parses summary price info for card
@@ -63,14 +63,13 @@ class TCGPlayerScrapper(object):
         sellers_offers = []
         link = self.full_url
         while True:
-            tcg_response = openurl(link, additional_headers=self.FULL_URL_COOKIE)
-            soup = BeautifulSoup(tcg_response)
+            page = openurl(link, additional_headers=FULL_URL_COOKIE)
+            soup = BeautifulSoup(page)
 
             offers_block = soup.find('table', class_='priceTable').find_all('tr', class_='vendor')
-            for block in offers_block:
-                offer_td = block.find('td', class_='seller')
+            for offer_td in [block.find('td', class_='seller') for block in offers_block]:
                 name = offer_td.find_all('a')[0].text.strip()
-                url = ext.get_domain(self.full_url) + offer_td.find_all('a')[0]['href']
+                url = ext.get_domain(self.full_url) + offer_td.find('a')['href']
                 rating = str(offer_td.find('span', class_='actualRating').find('a').contents[0]).strip().split()[1]
                 sales = ext.result_or_default(
                     lambda: str(offer_td.find('span', class_='ratingHeading').find('a').contents[0]).strip(),
@@ -82,7 +81,7 @@ class TCGPlayerScrapper(object):
                 sellers_offers.append({'seller': models.TCGSeller(name, url, rating, sales),
                                        'offer': models.TCGCardOffer(self.sid, condition, number, price)})
 
-            link_next = self._get_link_next(soup)
+            link_next = self._get_next_link(soup)
             if 'disabled' in link_next.attrs:
                 break
 
@@ -93,7 +92,7 @@ class TCGPlayerScrapper(object):
 
         return grouped_sellers
 
-    def _get_link_next(self, soup):
+    def _get_next_link(self, soup):
         """Parses soup to find tag with link to Next page in list
 
         :param soup: soup page with list of prices
