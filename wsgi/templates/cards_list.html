@@ -4,32 +4,42 @@
 <ul class="media-list">
     {% for card in cards %}
     {% set img_url = (card.redactions|first).info.img_url %}
-    <li class="media">
-        <a class="fancy-object pull-left" href="{{ img_url }}">
-            <img class="media-object" src="{{ img_url }}" style="height: 300px">
-        </a>
-        <div class="media-body relative-container" style="height: 300px;">
-            <blockquote style="height: 100%">
-                <h3 class="media-heading">
-                    {% set anchor = card.name|urlencode %}
-                    <a href="#{{ anchor }}" name="{{ anchor }}">{{ card.name }} [{{ card.number }}]</a>
-                    {#<small><a href="{{ card.info.url }}">at Magiccards</a></small>
-                    <small><a href="{{ card.prices.url }}">at TCGPlayer</a></small>#}
-                </h3>
-                <div class="media bottom">
-                    <table class="table table-bordered table-striped pull-right">
+    <li class="media span9 well well-large">
+        {% set anchor = card.name|urlencode %}
+        <h3 class="media-heading capitalize">
+            <a href="#{{ anchor }}" name="{{ anchor }}">[{{ card.number }}] {{ card.name }}</a>
+        </h3>
+        <div class="media-body relative-container">
+            <div class="media pull-left">
+                <a class="fancy-object pull-left" href="{{ img_url }}">
+                    <img class="media-object" src="{{ img_url }}" style="height: 300px">
+                </a>
+            </div>
+            <div class="media">
+                <table class="table table-striped table-bordered span6">
+                    <thead>
                         <tr>
-                            {% set prices = card.get_avg_prices() %}
-                            <th>Low:</th>
-                            <td>${{ '%0.2f'|format(prices['low']) }}</td>
-                            <th>Mid:</th>
-                            <td>${{ '%0.2f'|format(prices['mid']) }}</td>
-                            <th>High:</th>
-                            <td>${{ '%0.2f'|format(prices['high']) }}</td>
+                            <th rowspan="2">redaction</th>
+                            <th colspan="3">price</th>
                         </tr>
-                    </table>
-                </div>
-            </blockquote>
+                        <tr>
+                            <th>low</th>
+                            <th>mid</th>
+                            <th>high</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reda in card.redactions %}
+                        <tr>
+                            <td><a href="{{ reda.info.url }}">{{ reda.name }}</a></td>
+                            <td class="text-center">${{ '%0.2f'|format(reda.prices.low) }}</td>
+                            <td class="text-center">${{ '%0.2f'|format(reda.prices.mid) }}</td>
+                            <td class="text-center">${{ '%0.2f'|format(reda.prices.high) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </li>
     {% endfor %}

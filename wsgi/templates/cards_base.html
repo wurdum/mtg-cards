@@ -26,9 +26,9 @@
                 <li class="brand">List stats</li>
                 <li class="divider-vertical"></li>
                 <li><span class="menu-item">total cards: <strong>{{ cards|sum(attribute='number') }}</strong></span></li>
-                <li><span class="menu-item">low price: <strong>${{ cards|price_sum('low') }}</strong></span></li>
-                <li><span class="menu-item">mid price: <strong>${{ cards|price_sum('mid') }}</strong></span></li>
-                <li><span class="menu-item">high price: <strong>${{ cards|price_sum('high') }}</strong></span></li>
+                <li><span class="menu-item">low price: <strong>${{ '%0.2f'|format(cards|price_sum('low')) }}</strong></span></li>
+                <li><span class="menu-item">mid price: <strong>${{ '%0.2f'|format(cards|price_sum('mid')) }}</strong></span></li>
+                <li><span class="menu-item">high price: <strong>${{ '%0.2f'|format(cards|price_sum('high')) }}</strong></span></li>
             </ul>
         </div>
     </div>

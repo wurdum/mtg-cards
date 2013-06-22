@@ -78,3 +78,7 @@ ul.unstyled li.spread-text {
 .top-bottom-margin {
     margin: 20px 0;
 }
+
+.capitalize {
+    text-transform: capitalize;
+}
