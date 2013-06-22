@@ -1,9 +1,7 @@
 import eventlet
 import ext
-from scrapers import magiccards
-from scrapers import buymagic
+from scrapers import magiccards, buymagic, spellshop
 from scrapers.tcgplayer import TCGPlayerScrapper
-from scrapers.spellshop import SpellShopScrapper
 
 
 def resolve_cards_async(content):
@@ -72,7 +70,7 @@ def get_spellshop_offers_async(cards):
     """
     offers = {}
     pool = eventlet.GreenPool(len(cards))
-    for card, offer in pool.imap(SpellShopScrapper.get_offers, cards):
+    for card, offer in pool.imap(spellshop.get_offers, cards):
         offers[card] = offer
 
     return offers
