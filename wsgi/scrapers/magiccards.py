@@ -75,7 +75,7 @@ class BasicResolver(object):
         if hint is None:
             return None
 
-        name = hint.text
+        name = ext.uni(hint.text)
         url = ext.url_join(ext.get_domain(url), hint['href'])
 
         return name, url
@@ -93,7 +93,7 @@ class BasicResolver(object):
         if en_link_tag.name == 'b':
             return name, url
 
-        name = en_link_tag.text
+        name = ext.uni(en_link_tag.text)
         url = ext.url_join(ext.get_domain(url), en_link_tag['href'])
 
         return name, url
@@ -171,11 +171,11 @@ class AdvancedResolver(object):
                 break
 
             if tag.name == 'a':
-                tags.append((tag.text.strip().lower(), ext.url_join(ext.get_domain(MAGICCARDS_BASE_URL), tag['href'])))
+                tags.append((ext.uni(tag.text), ext.url_join(ext.get_domain(MAGICCARDS_BASE_URL), tag['href'])))
 
             if tag.name == 'b':
                 # remove card type in parentheses like (myth rare)
-                tags.append((tag.text.split('(')[0].strip().lower(), page_url))
+                tags.append((ext.uni(tag.text.split('(')[0]), page_url))
 
         return tags
 
@@ -203,7 +203,7 @@ class AdvancedResolver(object):
         :param table: info table at www.magiccards.info
         :return: url of the card image
         """
-        return table.find_all('img')[0]['src']
+        return table.find('img')['src']
 
     def _get_prices(self, magic_soup):
         """Parses prices by TCGPlayer card sid

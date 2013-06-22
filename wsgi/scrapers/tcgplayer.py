@@ -49,9 +49,9 @@ class TCGPlayerScrapper(object):
 
         prices = {'sid': self.sid,
                   'url': ext.get_domain_with_path(link_container.contents[0]['href']),
-                  'low': str(tcg_soup.find('td', class_='TCGPHiLoLow').contents[1].contents[0]),
-                  'mid': str(tcg_soup.find('td', class_='TCGPHiLoMid').contents[1].contents[0]),
-                  'high': str(tcg_soup.find('td', class_='TCGPHiLoHigh').contents[1].contents[0])}
+                  'low': ext.uni(tcg_soup.find('td', class_='TCGPHiLoLow').contents[1].contents[0]),
+                  'mid': ext.uni(tcg_soup.find('td', class_='TCGPHiLoMid').contents[1].contents[0]),
+                  'high': ext.uni(tcg_soup.find('td', class_='TCGPHiLoHigh').contents[1].contents[0])}
 
         return prices
 
@@ -68,15 +68,15 @@ class TCGPlayerScrapper(object):
 
             offers_block = soup.find('table', class_='priceTable').find_all('tr', class_='vendor')
             for offer_td in [block.find('td', class_='seller') for block in offers_block]:
-                name = offer_td.find_all('a')[0].text.strip()
+                name = ext.uni(offer_td.find('a'))
                 url = ext.get_domain(self.full_url) + offer_td.find('a')['href']
-                rating = str(offer_td.find('span', class_='actualRating').find('a').contents[0]).strip().split()[1]
+                rating = ext.uni(offer_td.find('span', class_='actualRating').find('a').contents[0]).split()[1]
                 sales = ext.result_or_default(
-                    lambda: str(offer_td.find('span', class_='ratingHeading').find('a').contents[0]).strip(),
+                    lambda: ext.uni(offer_td.find('span', class_='ratingHeading').find('a').contents[0]),
                     default='')
                 number = int(block.find('td', class_='quantity').text.strip())
-                price = str(block.find('td', class_='price').contents[0]).strip()
-                condition = str(block.find('td', class_='condition').find('a').contents[0]).strip()
+                price = ext.uni(block.find('td', class_='price').contents[0])
+                condition = ext.uni(block.find('td', class_='condition').find('a').contents[0])
 
                 sellers_offers.append({'seller': models.TCGSeller(name, url, rating, sales),
                                        'offer': models.TCGCardOffer(self.sid, condition, number, price)})

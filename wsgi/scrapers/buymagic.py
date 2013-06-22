@@ -29,8 +29,8 @@ def get_offers(card):
         price_table = card_div.find('table')
 
         for td_list in [offer_tr.find_all('td') for offer_tr in price_table.find_all('tr')]:
-            type = 'common' if td_list[0].find('b').text.strip() == 'Обычный'.decode('utf-8') else 'foil'
-            price = ext.uah_to_dollar(td_list[1].text.strip())
+            type = 'common' if ext.uni(td_list[0].find('b')) == 'Обычный'.decode('utf-8') else 'foil'
+            price = ext.uni(ext.uah_to_dollar(td_list[1]))
             number = len(td_list[2].find_all('option'))
 
             offers.append(models.ShopOffer(card, url, number, price, type=type))
