@@ -3,34 +3,29 @@
 {% include 'cards_sort_ops.html' %}
 <ul class="media-list">
     {% for card in cards %}
+    {% set img_url = (card.redactions|first).info.img_url %}
     <li class="media">
-        <a class="fancy-object pull-left" href="{{ card.info.img_url }}">
-            <img class="media-object" src="{{ card.info.img_url }}" style="height: 300px">
+        <a class="fancy-object pull-left" href="{{ img_url }}">
+            <img class="media-object" src="{{ img_url }}" style="height: 300px">
         </a>
         <div class="media-body relative-container" style="height: 300px;">
             <blockquote style="height: 100%">
                 <h3 class="media-heading">
                     {% set anchor = card.name|urlencode %}
                     <a href="#{{ anchor }}" name="{{ anchor }}">{{ card.name }} [{{ card.number }}]</a>
-                    <small><a href="{{ card.info.url }}">at Magiccards</a></small>
-                    <small><a href="{{ card.prices.url }}">at TCGPlayer</a></small>
+                    {#<small><a href="{{ card.info.url }}">at Magiccards</a></small>
+                    <small><a href="{{ card.prices.url }}">at TCGPlayer</a></small>#}
                 </h3>
-                <div class="media well well-small">
-                    <ul class="unstyled">
-                    {% for line in card.info.description %}
-                        <li class="spread-text">{{ line }}</li>
-                    {% endfor %}
-                    </ul>
-                </div>
                 <div class="media bottom">
                     <table class="table table-bordered table-striped pull-right">
                         <tr>
+                            {% set prices = card.get_avg_prices() %}
                             <th>Low:</th>
-                            <td>${{ '%0.2f'|format(card|price('low')) }}</td>
+                            <td>${{ '%0.2f'|format(prices['low']) }}</td>
                             <th>Mid:</th>
-                            <td>${{ '%0.2f'|format(card|price('mid')) }}</td>
+                            <td>${{ '%0.2f'|format(prices['mid']) }}</td>
                             <th>High:</th>
-                            <td>${{ '%0.2f'|format(card|price('high')) }}</td>
+                            <td>${{ '%0.2f'|format(prices['high']) }}</td>
                         </tr>
                     </table>
                 </div>

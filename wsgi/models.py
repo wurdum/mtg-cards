@@ -1,4 +1,5 @@
 import ext
+import numpy
 import filters
 
 
@@ -16,6 +17,15 @@ class Card(object):
     def is_resolved(self):
         return self.redactions is not None and self.redactions
 
+    def get_avg_prices(self):
+        """
+        Returns average prices among redactions
+        """
+        avg_prices = {}
+        for prop in ['low', 'mid', 'high']:
+            avg_prices[prop] = numpy.median([reda.prices.__dict__[prop] for reda in self.redactions])
+        return avg_prices
+
     def __hash__(self):
         return hash(self.name)
 
@@ -30,6 +40,7 @@ class Redaction(object):
     """
     Represents card redaction
     """
+
     def __init__(self, name, info=None, prices=None):
         self.name = name
         self.info = info

@@ -42,7 +42,7 @@ class BasicResolver(object):
         """
         Returns tuple (card name, card url) or None
         """
-        card_name = self.name
+        card_name = ext.uni(self.name)
         page_url = MAGICCARDS_BASE_URL + MAGICCARDS_QUERY_TMPL % quote(self.name)
 
         request_result = self._choose_hint_if_need(card_name, page_url)

@@ -42,7 +42,7 @@ def cards(token, repr):
     sort = ext.result_or_default(lambda: request.args['sort'], default='name', prevent_empty=True)
     order = ext.result_or_default(lambda: request.args['order'], default='asc', prevent_empty=True)
 
-    key_for_sort = lambda c: c.name if sort == 'name' else filters.price(c, 'low')
+    key_for_sort = lambda c: c.name if sort == 'name' else c.get_avg_prices()['low']
     templ_data = {'token': token, 'cards': sorted(cards, key=key_for_sort, reverse=order == 'desc'),
                   'repr': repr, 'sort': sort, 'order': order}
 
