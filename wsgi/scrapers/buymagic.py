@@ -1,9 +1,8 @@
 # coding=utf-8
-from eventlet.green import urllib2
 from bs4 import BeautifulSoup
 import models
 import ext
-from scrapers.helpers import openurl
+from scrapers.helpers import openurl, quote
 
 
 class BuyMagicScrapper(object):
@@ -22,7 +21,7 @@ class BuyMagicScrapper(object):
         :param card: models.Card object
         :return: returns tuple (models.Card, list of models.ShopOffer)
         """
-        search_url = BuyMagicScrapper.BASE_SEARCH_URL.replace('{card.name}', urllib2.quote(card.name))
+        search_url = BuyMagicScrapper.BASE_SEARCH_URL.replace('{card.name}', quote(card.name))
         page = openurl(search_url)
         page = page.replace('<link rel="stylesheet" href="/jquery.fancybox-1.3.0.css" type="text/css" media="screen">',
                             '').replace('"title=', '" title=')

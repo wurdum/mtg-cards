@@ -1,7 +1,6 @@
 import eventlet
 import ext
 from scrapers import magiccards
-from scrapers.magiccards import MagiccardsScraper
 from scrapers.tcgplayer import TCGPlayerScrapper
 from scrapers.buymagic import BuyMagicScrapper
 from scrapers.spellshop import SpellShopScrapper

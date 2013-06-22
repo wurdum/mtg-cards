@@ -1,9 +1,8 @@
 import difflib
-from eventlet.green import urllib2
 from bs4 import BeautifulSoup, Tag
 import ext
 import models
-from scrapers.helpers import openurl
+from scrapers.helpers import openurl, quote
 from scrapers.tcgplayer import TCGPlayerScrapper
 
 MAGICCARDS_BASE_URL = 'http://magiccards.info/'
@@ -43,7 +42,7 @@ class BaseResolver(object):
         Returns tuple (card name, card url) or None
         """
         card_name = self.name
-        page_url = MAGICCARDS_BASE_URL + MAGICCARDS_QUERY_TMPL % urllib2.quote(self.name)
+        page_url = MAGICCARDS_BASE_URL + MAGICCARDS_QUERY_TMPL % quote(self.name)
         page = openurl(page_url)
         soup = BeautifulSoup(page, from_encoding='utf-8')
 

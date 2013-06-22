@@ -4,7 +4,7 @@ from eventlet.green import urllib2
 import ext
 
 
-def openurl(url):
+def openurl(url, additional_headers=None):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',
         'Accept-Language': 'ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4',
@@ -12,6 +12,9 @@ def openurl(url):
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Cache-Control': 'max-age=0'
     }
+
+    if additional_headers:
+        headers.update(additional_headers)
 
     opener = urllib2.build_opener()
     opener.addheaders = headers.items()
@@ -23,3 +26,10 @@ def openurl(url):
 
     page = response.read()
     return page
+
+
+def quote(card_name):
+    """
+    Quotes card name
+    """
+    return urllib2.quote(card_name)

@@ -1,8 +1,7 @@
-from eventlet.green import urllib2
 from bs4 import BeautifulSoup
-from scrapers.helpers import openurl
 import ext
 import models
+from scrapers.helpers import openurl, quote
 
 
 class SpellShopScrapper(object):
@@ -20,7 +19,7 @@ class SpellShopScrapper(object):
         :param card: models.Card object
         :return: returns tuple (models.Card, models.ShopOffer)
         """
-        encoded_card_name = urllib2.quote(card.name.replace('\'', ''))
+        encoded_card_name = quote(card.name.replace('\'', ''))
         search_url = SpellShopScrapper.BASE_SEARCH_URL.replace('{card.name}', encoded_card_name)
         page = openurl(search_url)
         soup = BeautifulSoup(page, from_encoding='utf-8')

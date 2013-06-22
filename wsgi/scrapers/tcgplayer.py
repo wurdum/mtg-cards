@@ -1,6 +1,5 @@
 import itertools
 import re
-from eventlet.green import urllib2
 from bs4 import BeautifulSoup
 import ext
 import models
@@ -15,8 +14,8 @@ class TCGPlayerScrapper(object):
     BRIEF_BASE_URL = 'http://partner.tcgplayer.com/x3/mchl.ashx?pk=MAGCINFO&sid='
     FULL_BASE_URL = 'http://store.tcgplayer.com/productcatalog/product/getpricetable' \
                     '?captureFeaturedSellerData=True&pageSize=50&productId='
-    FULL_URL_COOKIE = ('Cookie', 'SearchCriteria=WantGoldStar=False&MinRating=0&MinSales='
-                                 '&magic_MinQuantity=1&GameName=Magic')
+    FULL_URL_COOKIE = {'Cookie': 'SearchCriteria=WantGoldStar=False&MinRating=0&MinSales='
+                                 '&magic_MinQuantity=1&GameName=Magic'}
 
     def __init__(self, sid):
         self.sid = sid
@@ -61,13 +60,10 @@ class TCGPlayerScrapper(object):
 
         :return: dict {'seller': models.TCGSeller, 'offers': list of models.TCGCardOffer}
         """
-        opener = urllib2.build_opener()
-        opener.addheaders.append(self.FULL_URL_COOKIE)
-
         sellers_offers = []
         link = self.full_url
         while True:
-            tcg_response = opener.open(link).read()
+            tcg_response = openurl(link, additional_headers=self.FULL_URL_COOKIE)
             soup = BeautifulSoup(tcg_response)
 
             offers_block = soup.find('table', class_='priceTable').find_all('tr', class_='vendor')
