@@ -6,47 +6,53 @@ import models
 from scrapers.helpers import openurl
 from scrapers.tcgplayer import TCGPlayerScrapper
 
+MAGICCARDS_BASE_URL = 'http://magiccards.info/'
+MAGICCARDS_QUERY_TMPL = 'query?q=!%s&v=card&s=cname'
 
-class MagiccardsScraper(object):
+
+def resolve_card(content_record):
+    """Resolves card
+
+    :param content_record: dict {card name, card number}
+    :return: object models.Card
     """
-    Parses cards info using www.magiccards.info resource
+    base_resolver = BaseResolver(content_record['name'])
+    resolve_result = base_resolver.get_name_and_url()
+    if resolve_result is None:
+        return models.Card(content_record['name'], content_record['number'])
+
+    name, url = resolve_result
+    advanced_resolver = AdvancedResolver(url)
+    redactions = advanced_resolver.get_redactions()
+    if redactions is None:
+        return models.Card(name, content_record['number'])
+
+    return models.Card(name, content_record['number'], redactions=redactions)
+
+
+class BaseResolver(object):
+    """
+    Finds basic page for card and fixes name if needs
     """
 
-    MAGICCARDS_BASE_URL = 'http://magiccards.info/'
-    MAGICCARDS_QUERY_TMPL = 'query?q=!%s&v=card&s=cname'
-
-    def __init__(self, name, number):
+    def __init__(self, name):
         self.name = name
-        self.number = number
 
-    @staticmethod
-    def resolve_card(content_record):
-        """Parses card info
-
-        :param content_record: (card_name, card_number) tuple
-        :return: models.Card object
+    def get_name_and_url(self):
         """
-        if content_record['name'].split()[0].strip().lower() in ['mountain', 'swamp', 'island', 'plains', 'forest']:
-            return None
-
-        scrapper = MagiccardsScraper(content_record['name'], content_record['number'])
-        return scrapper.get_card()
-
-    def get_card(self):
-        """Parses card info, if no info returns card object without info and prices
-
-        :return: models.Card object
+        Returns tuple (card name, card url) or None
         """
-        page_url = self.MAGICCARDS_BASE_URL + self.MAGICCARDS_QUERY_TMPL % urllib2.quote(self.name)
+        card_name = self.name
+        page_url = MAGICCARDS_BASE_URL + MAGICCARDS_QUERY_TMPL % urllib2.quote(self.name)
         page = openurl(page_url)
         soup = BeautifulSoup(page, from_encoding='utf-8')
 
         if not self._is_card_page(soup):
             hint = self._try_get_hint(self.name, soup)
             if hint is None:
-                return models.Card(self.name, int(self.number))
+                return None
 
-            self.name = hint.text
+            card_name = hint.text
             page_url = ext.url_join(ext.get_domain(page_url), hint['href'])
             page = openurl(page_url)
             soup = BeautifulSoup(page)
@@ -54,62 +60,13 @@ class MagiccardsScraper(object):
         # if card is found, but it's not english
         if not self._is_en(soup):
             en_link_tag = list(soup.find_all('table')[3].find_all('td')[2].find('img', alt='English').next_elements)[1]
-            self.name = en_link_tag.text
+            card_name = en_link_tag.text
             page_url = ext.url_join(ext.get_domain(page_url), en_link_tag['href'])
 
-        reda_pages = self._get_redas_urls(page_url)
+        if page_url is None:
+            return None
 
-        redas = []
-        for reda_page in reda_pages:
-            page = openurl(reda_page['url'])
-            reda_soup = BeautifulSoup(page)
-
-            info = self._get_card_info(reda_soup)
-            price = self._get_prices(reda_soup)
-            if price is None:
-                continue
-
-            card_info = models.CardInfo(**info)
-            card_prices = models.CardPrices(**price)
-
-            redas.append(models.Redaction(reda_page['name'], info=card_info, prices=card_prices))
-
-        return models.Card(self.name, int(self.number), redactions=redas)
-
-    def _get_redas_urls(self, page_url):
-        """Parses card page and finds all available card redactions
-
-        :param page_url: card page url
-        :return: list of dict (reda name, reda url)
-        """
-        page = openurl(page_url)
-        soup = BeautifulSoup(page)
-
-        content_table = soup.find_all('table')[3]
-        redas_td = content_table.find_all('td')[2]
-
-        # if card has second side
-        start_block_index = 1 if len(redas_td.find_all('u')) == 3 else 2
-        redas_block_start = redas_td.find_all('u')[start_block_index]
-
-        tags = []
-        for tag in redas_block_start.next_sibling.next_elements:
-            if not isinstance(tag, Tag):
-                continue
-
-            if tag.name == 'u':
-                break
-
-            if tag.name == 'a':
-                tags.append({'name': tag.text.strip().lower(),
-                             'url': ext.url_join(ext.get_domain(self.MAGICCARDS_BASE_URL), tag['href'])})
-
-            if tag.name == 'b':
-                # remove card type
-                reda_name = tag.text.split('(')[0].strip().lower()
-                tags.append({'name': reda_name, 'url': page_url})
-
-        return tags
+        return card_name, page_url
 
     def _is_en(self, soup):
         """
@@ -142,6 +99,73 @@ class MagiccardsScraper(object):
 
         return sorted(hints_list, key=lambda h: h['rate'], reverse=True)[0]['a_tag'] if hints_list else None
 
+
+class AdvancedResolver(object):
+    """
+    Resolves card redactions, info and tcg prices
+    """
+
+    def __init__(self, url):
+        self.url = url
+
+    def get_redactions(self):
+        """
+        Parses card redactions
+        """
+        reda_pages = self._get_redas_urls(self.url)
+
+        redas = []
+        for reda_page in reda_pages:
+            page = openurl(reda_page['url'])
+            reda_soup = BeautifulSoup(page)
+
+            info = self._get_card_info(reda_soup)
+            price = self._get_prices(reda_soup)
+            if price is None:
+                continue
+
+            card_info = models.CardInfo(**info)
+            card_prices = models.CardPrices(**price)
+
+            redas.append(models.Redaction(reda_page['name'], info=card_info, prices=card_prices))
+
+        return redas
+
+    def _get_redas_urls(self, page_url):
+        """Parses card page and finds all available card redactions
+
+        :param page_url: card page url
+        :return: list of dict (reda name, reda url)
+        """
+        page = openurl(page_url)
+        soup = BeautifulSoup(page)
+
+        content_table = soup.find_all('table')[3]
+        redas_td = content_table.find_all('td')[2]
+
+        # if card has second side
+        start_block_index = 1 if len(redas_td.find_all('u')) == 3 else 2
+        redas_block_start = redas_td.find_all('u')[start_block_index]
+
+        tags = []
+        for tag in redas_block_start.next_sibling.next_elements:
+            if not isinstance(tag, Tag):
+                continue
+
+            if tag.name == 'u':
+                break
+
+            if tag.name == 'a':
+                tags.append({'name': tag.text.strip().lower(),
+                             'url': ext.url_join(ext.get_domain(MAGICCARDS_BASE_URL), tag['href'])})
+
+            if tag.name == 'b':
+                # remove card type
+                reda_name = tag.text.split('(')[0].strip().lower()
+                tags.append({'name': reda_name, 'url': page_url})
+
+        return tags
+
     def _get_card_info(self, soup):
         """Parses soup page and returns dict with card info
 
@@ -159,7 +183,7 @@ class MagiccardsScraper(object):
         :param table: info table at www.magiccards.info
         :return: url of the page with card
         """
-        return ext.url_join(MagiccardsScraper.MAGICCARDS_BASE_URL, table.find_all('a')[0]['href'])
+        return ext.url_join(MAGICCARDS_BASE_URL, table.find_all('a')[0]['href'])
 
     def _get_img_url(self, table):
         """Parses info table

@@ -1,5 +1,6 @@
 import eventlet
 import ext
+from scrapers import magiccards
 from scrapers.magiccards import MagiccardsScraper
 from scrapers.tcgplayer import TCGPlayerScrapper
 from scrapers.buymagic import BuyMagicScrapper
@@ -14,7 +15,7 @@ def resolve_cards_async(content):
     :return: list of models.Card objects
     """
     pool = eventlet.GreenPool(len(content))
-    cards = [card for card in pool.imap(MagiccardsScraper.resolve_card, content)]
+    cards = [card for card in pool.imap(magiccards.resolve_card, content)]
 
     return cards
 
