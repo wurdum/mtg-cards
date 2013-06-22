@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, url_for, redirect
 import ext
-import scraper
+import scrapers
 import db
 import filters
 
@@ -24,7 +24,7 @@ def upload():
 
         try:
             content = ext.read_file(f.stream)
-            cards = scraper.resolve_cards_async(content)
+            cards = scrapers.resolve_cards_async(content)
             cards = ext.merge_pups(cards)
         except:
             return redirect(url_for('error'))
@@ -67,7 +67,7 @@ def stats(token):
 @app.route('/<token>/shop/tcg', methods=['GET'])
 def tcg(token):
     cards = db.get_cards(token, only_resolved=True)
-    sellers = scraper.get_tcg_sellers_async(cards)
+    sellers = scrapers.get_tcg_sellers_async(cards)
 
     sellers_av = filter(lambda s: s.has_all_cards(cards), sellers)
     sellers_av = sorted(sellers_av, key=lambda s: s.cards_cost)
@@ -80,7 +80,7 @@ def tcg(token):
 @app.route('/<token>/shop/bm', methods=['GET'])
 def bm(token):
     cards = db.get_cards(token, only_resolved=True)
-    offers = scraper.get_buymagic_offers_async(cards)
+    offers = scrapers.get_buymagic_offers_async(cards)
 
     return render_template('cards_bm_offers.html', token=token, cards=cards, offers=offers)
 
@@ -88,7 +88,7 @@ def bm(token):
 @app.route('/<token>/shop/ss', methods=['GET'])
 def ss(token):
     cards = db.get_cards(token, only_resolved=True)
-    offers = scraper.get_spellshop_offers_async(cards)
+    offers = scrapers.get_spellshop_offers_async(cards)
 
     return render_template('cards_ss_offers.html', token=token, cards=cards, offers=offers)
 
