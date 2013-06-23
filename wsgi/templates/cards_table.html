@@ -1,12 +1,12 @@
 {% extends 'cards_base.html' %}
 {% block cards_list %}
 {% include 'cards_sort_ops.html' %}
-<table class="table table-bordered table-striped">
+<table class="table table-bordered">
     <thead>
         <tr>
+            <th rowspan="2" class="span4">name</th>
             <th rowspan="2" class="span1">number</th>
-            <th rowspan="2" class="span3">name</th>
-            <th rowspan="2" class="span9">description</th>
+            <th rowspan="2" class="span5">redaction</th>
             <th colspan="3">price</th>
         </tr>
         <tr>
@@ -18,24 +18,20 @@
     <tbody>
         {% for card in cards %}
         <tr>
-            <td class="text-center">{{ card.number }}</td>
-            <td>
+            <td class="text-middle" rowspan="{{ card.redactions|length + 1 }}">
                 {% set anchor = card.name|urlencode %}
                 <p><a href="#{{ anchor }}" name="{{ anchor }}">{{ card.name }} [{{ card.number }}]</a></p>
-                <small><a href="{{ card.info.url }}">at Magiccards</a></small><br/>
-                <small><a href="{{ card.prices.url }}">at TCGPlayer</a></small>
             </td>
-            <td>
-                <div class="well well-small">
-                    {% for line in card.info.description %}
-                        <small>{{ line }}</small><br/>
-                    {% endfor %}
-                </div>
-            </td>
-            <td class="text-center text-middle">${{ '%0.2f'|format(card|price('low')) }}</td>
-            <td class="text-center text-middle">${{ '%0.2f'|format(card|price('mid')) }}</td>
-            <td class="text-center text-middle">${{ '%0.2f'|format(card|price('high')) }}</td>
+            <td class="text-center text-middle" rowspan="{{ card.redactions|length + 1 }}">{{ card.number }}</td>
         </tr>
+        {% for reda in card.redactions %}
+        <tr>
+            <td><a href="{{ reda.info.url }}">{{ reda.name }}</a></td>
+            <td class="text-center text-middle">${{ '%0.2f'|format(reda.prices.low) }}</td>
+            <td class="text-center text-middle">${{ '%0.2f'|format(reda.prices.mid) }}</td>
+            <td class="text-center text-middle">${{ '%0.2f'|format(reda.prices.high) }}</td>
+        </tr>
+        {% endfor %}
         {% endfor %}
     </tbody>
 </table>
