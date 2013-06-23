@@ -101,8 +101,9 @@ class TCGCardOffer(object):
     Represents tcg seller for specific card
     """
 
-    def __init__(self, sid, condition, number, price):
+    def __init__(self, sid, redaction, condition, number, price):
         self.sid = sid
+        self.redaction = redaction
         self.condition = condition
         self.number = number
         self.price = price
@@ -125,7 +126,7 @@ class TCGCardOffersList(object):
         """
         Offers list sorted by price lower to higher
         """
-        return sorted(self._offers, key=lambda o: filters.price_str_to_float(o.price))
+        return sorted(self._offers, key=lambda o: o.price)
 
     @property
     def available_card_num(self):
@@ -148,7 +149,7 @@ class TCGCardOffersList(object):
 
             buy_cards = need_cards if available_cards > need_cards else available_cards
             bought += buy_cards
-            cost += buy_cards * filters.price_str_to_float(offer.price)
+            cost += buy_cards * offer.price
 
             if bought == self.card.number:
                 break
@@ -237,8 +238,9 @@ class ShopOffer(object):
     Represents card offer from www.buymagic.ua
     """
 
-    def __init__(self, card, url, number, price, type='common'):
+    def __init__(self, card, redaction, url, number, price, type='common'):
         self.card = card
+        self.redaction = redaction
         self.url = url
         self.number = number
         self.price = price

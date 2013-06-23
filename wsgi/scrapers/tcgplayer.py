@@ -56,7 +56,7 @@ class TCGPlayerScrapper(object):
 
         return prices
 
-    def get_full_info(self):
+    def get_full_info(self, redaction):
         """Parses offers info for card
 
         :return: dict {'seller': models.TCGSeller, 'offers': list of models.TCGCardOffer}
@@ -68,8 +68,9 @@ class TCGPlayerScrapper(object):
             soup = BeautifulSoup(page)
 
             offers_block = soup.find('table', class_='priceTable').find_all('tr', class_='vendor')
-            for offer_td in [block.find('td', class_='seller') for block in offers_block]:
-                name = ext.uni(offer_td.find('a'))
+            for block in offers_block:
+                offer_td = block.find('td', class_='seller')
+                name = ext.uni(offer_td.find('a').text)
                 url = ext.get_domain(self.full_url) + offer_td.find('a')['href']
                 rating = ext.uni(offer_td.find('span', class_='actualRating').find('a').contents[0]).split()[1]
                 sales = ext.result_or_default(
@@ -80,7 +81,7 @@ class TCGPlayerScrapper(object):
                 condition = ext.uni(block.find('td', class_='condition').find('a').contents[0])
 
                 sellers_offers.append({'seller': models.TCGSeller(name, url, rating, sales),
-                                       'offer': models.TCGCardOffer(self.sid, condition, number, price)})
+                                       'offer': models.TCGCardOffer(self.sid, redaction, condition, number, price)})
 
             link_next = self._get_next_link(soup)
             if 'disabled' in link_next.attrs:

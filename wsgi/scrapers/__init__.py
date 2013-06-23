@@ -1,3 +1,4 @@
+import itertools
 import eventlet
 import ext
 from scrapers import magiccards, buymagic, spellshop
@@ -24,8 +25,9 @@ def get_tcg_sellers_async(cards):
     :return: list of models.TCGSeller objects with filled cards property
     """
     sellers = []
-    pool = eventlet.GreenPool(len(cards))
-    for card, sellers_offers in pool.imap(get_tcg_card_offers, cards):
+    cards_redactions = list(itertools.chain(*[[(card, reda) for reda in card.redactions] for card in cards]))
+    pool = eventlet.GreenPool(len(cards_redactions) if len(cards_redactions) < 100 else 100)
+    for card, sellers_offers in pool.imap(get_tcg_card_offers, cards_redactions):
         for seller_offers in sellers_offers:
             seller = ext.get_first(sellers, lambda s: s == seller_offers['seller'])
             if seller is None:
@@ -38,14 +40,15 @@ def get_tcg_sellers_async(cards):
     return sellers
 
 
-def get_tcg_card_offers(card):
+def get_tcg_card_offers(args):
     """Parses TCGPlayer sellers list for specified card
 
-    :param card: models.Card object
+    :param args: tuple of (models.Card, models.Redaction)
     :return: tuple (models.Card, dict {'seller': models.TCGSeller, 'offers': list of models.TCGCardOffer})
     """
-    tcg_scrapper = TCGPlayerScrapper(card.prices.sid)
-    return card, tcg_scrapper.get_full_info()
+    card, redaction = args
+    tcg_scrapper = TCGPlayerScrapper(redaction.prices.sid)
+    return card, tcg_scrapper.get_full_info(redaction)
 
 
 def get_buymagic_offers_async(cards):

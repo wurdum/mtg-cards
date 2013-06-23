@@ -50,15 +50,16 @@
                                     {% set col = seller.get_card_offers(card) %}
                                     {% if col == None %}
                                         <tr class="error">
-                                            <td class="text-middle"><a href="{{ card.info.url }}">{{ card.name }}</a></td>
+                                            <td class="text-middle">{{ card.name }}</td>
                                             <td class="text-center text-middle">{{ card.number }}</td>
-                                            <td class="text-center" colspan="3">not available</td>
+                                            <td class="text-center" colspan="4">not available</td>
                                         </tr>
                                     {% else %}
+                                        {% set reda = (col.offers|first).redaction %}
                                         {% set status = 'warning' if not col.card_is_available else '' %}
                                         <tr class="{{ status }}">
                                             <td class="text-middle" rowspan="{{ col.offers|length + 1 }}">
-                                                <a href="{{ col.card.info.url }}">{{ col.card.name }}</a>
+                                                <a href="{{ reda.info.url }}">{{ col.card.name }}</a>
                                             </td>
                                             <td class="text-center text-middle" rowspan="{{ col.offers|length + 1 }}">
                                                 {{ col.card.number }}
@@ -66,6 +67,7 @@
                                         </tr>
                                         {% for offer in col.offers %}
                                             <tr class="{{ status }}">
+                                                <td><a href="{{ offer.redaction.info.url }}">{{ offer.redaction.name }}</a></td>
                                                 <td class="text-center">{{ offer.condition }}</td>
                                                 <td class="text-center">{{ offer.number }}</td>
                                                 <td class="text-center">{{ offer.price }}</td>

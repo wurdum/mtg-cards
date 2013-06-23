@@ -70,7 +70,7 @@ def tcg(token):
     sellers_al = sorted(sellers, key=lambda s: s.available_cards_num, reverse=True)
 
     return render_template('cards_tcg_sellers.html', token=token, cards=cards,
-                           sellers_groups={'av': sellers_av[:10], 'al': sellers_al[:30]})
+                           sellers_groups={'av': sellers_av, 'al': sellers_al})
 
 
 @app.route('/<token>/shop/bm', methods=['GET'])
