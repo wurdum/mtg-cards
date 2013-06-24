@@ -187,7 +187,8 @@ class AdvancedResolver(object):
         """
         content_table = soup.find_all('table')[3]
         return {'url': self._get_url(content_table),
-                'img_url': self._get_img_url(content_table)}
+                'img_url': self._get_img_url(content_table),
+                'description': self._get_description(content_table)}
 
     def _get_url(self, table):
         """Parses info table
@@ -204,6 +205,16 @@ class AdvancedResolver(object):
         :return: url of the card image
         """
         return table.find('img')['src']
+
+    def _get_description(self, table):
+        """Parses info table
+
+        :param table: info table at www.magiccards.info
+        :return: list of paragraphs of card's description
+        """
+        dirty_descr = str(table.find_all('p', class_='ctext')[0].contents[0])
+        clean_descr = dirty_descr.replace('<b>', '').replace('</b>', '').replace('</br>', '').split('<br><br>')
+        return clean_descr
 
     def _get_prices(self, magic_soup):
         """Parses prices by TCGPlayer card sid

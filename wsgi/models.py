@@ -1,6 +1,5 @@
 import ext
 import numpy
-import filters
 
 
 class Card(object):
@@ -16,6 +15,11 @@ class Card(object):
     @property
     def is_resolved(self):
         return self.redactions is not None and self.redactions
+
+    @property
+    def description(self):
+        return self.redactions[0].info.description \
+            if self.redactions is not None and len(self.redactions) > 1 else None
 
     def get_avg_prices(self):
         """
@@ -61,9 +65,10 @@ class CardInfo(object):
     Card info from www.magiccards.com
     """
 
-    def __init__(self, url, img_url):
+    def __init__(self, url, img_url, description):
         self.url = url
         self.img_url = img_url
+        self.description = description
 
     def __repr__(self):
         return self.url

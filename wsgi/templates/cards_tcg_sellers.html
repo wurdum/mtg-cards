@@ -40,6 +40,7 @@
                                     <tr>
                                         <th>name</th>
                                         <th>need</th>
+                                        <th>redaction</th>
                                         <th>condition</th>
                                         <th>available</th>
                                         <th>price</th>
@@ -70,7 +71,7 @@
                                                 <td><a href="{{ offer.redaction.info.url }}">{{ offer.redaction.name }}</a></td>
                                                 <td class="text-center">{{ offer.condition }}</td>
                                                 <td class="text-center">{{ offer.number }}</td>
-                                                <td class="text-center">{{ offer.price }}</td>
+                                                <td class="text-center">${{ offer.price }}</td>
                                             </tr>
                                         {% endfor %}
                                     {% endif %}
