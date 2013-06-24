@@ -13,9 +13,16 @@ def resolve_cards_async(content):
     :return: list of models.Card objects
     """
     pool = eventlet.GreenPool(len(content))
-    cards = [card for card in pool.imap(magiccards.resolve_card, content)]
+    cards = [card for card in pool.imap(magiccards.resolve_card, _filter_lands(content))]
 
     return cards
+
+
+def _filter_lands(content):
+    lands = ['mountain', 'swamp', 'island', 'plains', 'forest']
+    for record in content:
+        if record['name'].strip().lower().split()[0] not in lands:
+            yield record
 
 
 def get_tcg_sellers_async(cards):

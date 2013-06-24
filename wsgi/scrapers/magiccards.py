@@ -15,9 +15,6 @@ def resolve_card(content_record):
     :param content_record: dict {card name, card number}
     :return: object models.Card
     """
-    if content_record['name'].split()[0] in ['mountain', 'swamp', 'island', 'plains', 'forest']:
-        return models.Card(content_record['name'], content_record['number'])
-
     base_resolver = BasicResolver(content_record['name'])
     resolve_result = base_resolver.get_name_and_url()
     if resolve_result is None:
