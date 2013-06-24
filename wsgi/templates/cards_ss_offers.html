@@ -19,7 +19,7 @@
                 <tr class="{{ 'warning' if offer.number < card.number else '' }}">
                     <td class="text-middle">
                         <p>
-                            <a href="{{ card.info.url }}"><strong>{{ card.name }}</strong></a>
+                            <a href="{{ (card.redactions|first).info.url }}"><strong>{{ card.name }}</strong></a>
                             <small><a href="{{ offer.url }}">[at SpellShop]</a></small>
                         </p>
                     </td>
@@ -30,7 +30,7 @@
             {% else %}
                 <tr class="error">
                     <td class="text-middle" rowspan="{{ card_offers|length + 1 }}">
-                        <p><a href="{{ card.info.url }}"><strong>{{ card.name }}</strong></a></p>
+                        <p><a href="{{ (card.redactions|first).info.url }}"><strong>{{ card.name }}</strong></a></p>
                     </td>
                     <td class="text-center text-middle">{{ card.number }}</td>
                     <td class="text-center text-middle" colspan="3">not available</td>

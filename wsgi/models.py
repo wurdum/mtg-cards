@@ -243,9 +243,8 @@ class ShopOffer(object):
     Represents card offer from www.buymagic.ua
     """
 
-    def __init__(self, card, redaction, url, number, price, type='common'):
+    def __init__(self, card, url, number, price, type='common'):
         self.card = card
-        self.redaction = redaction
         self.url = url
         self.number = number
         self.price = price
