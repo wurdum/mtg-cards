@@ -18,7 +18,7 @@ def price_sum(cards, prop):
     :param prop: price that will be summed (low, mid, high)
     :return: sum as float number
     """
-    return sum([card.get_avg_prices()[prop] * card.number for card in cards])
+    return sum([card.get_avg_prices()[prop] * card.number for card in cards if card.is_resolved])
 
 
 def price_float(card, prop):

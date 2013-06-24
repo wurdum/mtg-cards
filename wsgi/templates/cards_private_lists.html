@@ -20,9 +20,9 @@
                     <a href="{{ url_for('cards', token=cards_list.token) }}">{{ cards_list.token }}</a>
                 </td>
                 <td class="text-center">{{ cards_list.cards_num }}</td>
-                <td class="text-center">${{ cards_list.price['low'] }}</td>
-                <td class="text-center">${{ cards_list.price['mid'] }}</td>
-                <td class="text-center">${{ cards_list.price['high'] }}</td>
+                <td class="text-center">${{ '%0.2f'|format(cards_list.price['low']) }}</td>
+                <td class="text-center">${{ '%0.2f'|format(cards_list.price['mid']) }}</td>
+                <td class="text-center">${{ '%0.2f'|format(cards_list.price['high']) }}</td>
             </tr>
         {% endfor %}
         </tbody>
