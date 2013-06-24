@@ -1,1 +1,5 @@
-Application that calculates price fo the MTG cards set using TCGPlayer min costs
+mtg-cards
+==========
+
+Openshift based flask+mongodb application that parses prices at tcgplayer and finds optimal seller.
+Also presents ability to find cards at spellshop and buymagic.
