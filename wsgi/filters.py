@@ -1,16 +1,6 @@
 import random
 
 
-def price(card, prop):
-    """Returns card price considering cards number
-
-    :param card: card object
-    :param prop: price that will be used (low, mid, high)
-    :return: price as float number
-    """
-    return price_float(card, prop) * card.number
-
-
 def price_sum(cards, prop):
     """Calculates sum of the prices for cards list
 
@@ -19,16 +9,6 @@ def price_sum(cards, prop):
     :return: sum as float number
     """
     return sum([card.get_avg_prices()[prop] * card.number for card in cards if card.is_resolved])
-
-
-def price_float(card, prop):
-    """Converts price to float repr
-
-    :param card: card object
-    :param prop: price that will be used (low, mid, high)
-    :return: price as float number
-    """
-    return price_str_to_float(card.prices.__dict__[prop])
 
 
 def price_str_to_float(string):
@@ -82,6 +62,4 @@ def register(app):
     app.add_template_filter(idfy)
     app.add_template_filter(active_if)
     app.add_template_filter(get_new_order)
-    app.add_template_filter(price)
-    app.add_template_filter(price_float)
     app.add_template_filter(price_sum)
