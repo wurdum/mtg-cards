@@ -4,7 +4,7 @@ import pymongo
 import db as dbmodule
 import models
 import ext
-from scrapers import TCGPlayerScrapper
+from scrapers.tcgplayer import TCGPlayerScrapper
 
 
 class Task(object):
@@ -45,18 +45,30 @@ def create_task(token):
 
 def tooffer(dict_offer):
     return {'seller': models.TCGSeller(**dict_offer['seller']),
-            'offer': [models.TCGCardOffer(**dbcoff) for dbcoff in dict_offer['offer']]}
+            'offers': [models.TCGCardOffer(**dbcoff) for dbcoff in dict_offer['offers']]}
 
 
 def toentry(dict_entry):
-    offers = [tooffer(off) for off in dict_entry['offers']] if 'entries' in dict_entry and dict_entry else None
+    offers = [tooffer(off) for off in dict_entry['offers']] if 'offers' in dict_entry and dict_entry['offers'] else None
     return TaskEntry(dict_entry['card_name'], dict_entry['card_reda'], dict_entry['card_sid'], dict_entry['status'],
                      offers=offers)
 
 
 def totask(dict_task):
-    entries = [toentry(dbe) for dbe in dict_task['entries']] if 'entries' in dict_task and dict_task else None
+    entries = [toentry(dbe) for dbe in dict_task['entries']] if 'entries' in dict_task and dict_task['entries'] else None
     return Task(dict_task['token'], dict_task['status'], entries=entries)
+
+
+def get_task(token):
+    connection = pymongo.MongoClient(MONGO_URL)
+    db = connection[DB]
+
+    dbtask = db.tasks.find_one({'token': token})
+    if dbtask is None or dbtask['status'] == 'need update':
+        get_tokens()
+        return get_task(token)
+
+    return totask(dbtask)
 
 
 def execute(task):
@@ -69,11 +81,13 @@ def execute(task):
         scrapper = TCGPlayerScrapper(entry.card_sid)
         offers = scrapper.get_full_info()
         entry.offers = offers
+        entry.status = 'updated'
         print 'done', len(offers), entry
 
     connection = pymongo.MongoClient(MONGO_URL)
     db = connection[DB]
 
+    task.status = 'updated'
     db.tasks.update({'token': task.token}, dbmodule.todict(task))
     print 'done', task
 

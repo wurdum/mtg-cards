@@ -63,7 +63,7 @@ def stats(token):
 @app.route('/<token>/shop/tcg', methods=['GET'])
 def tcg(token):
     cards = db.get_cards(token, only_resolved=True)
-    sellers = scrapers.get_tcg_sellers_async(cards)
+    sellers = scrapers.get_tcg_sellers_async(token, cards)
 
     sellers_av = filter(lambda s: s.has_all_cards(cards), sellers)
     sellers_av = sorted(sellers_av, key=lambda s: s.cards_cost)

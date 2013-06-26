@@ -1,6 +1,7 @@
 import itertools
 import eventlet
 import ext
+import worker
 from scrapers import magiccards, buymagic, spellshop
 from scrapers.tcgplayer import TCGPlayerScrapper
 
@@ -29,17 +30,31 @@ def _filter_lands(content):
             yield record
 
 
-def get_tcg_sellers_async(cards):
+def get_tcg_sellers_async(token, cards):
     """Parses TCGPlayer sellers that could sell specified cards
 
+    :param token: list str token
     :param cards: list of models.Card objects
     :return: list of models.TCGSeller objects with filled cards property
     """
+    # sellers = []
+    # cards_redactions = list(itertools.chain(*[[(card, reda) for reda in card.redactions] for card in cards]))
+    # pool = eventlet.GreenPool(len(cards_redactions) if len(cards_redactions) < 100 else 100)
+    # for card, sellers_offers in pool.imap(get_tcg_card_offers, cards_redactions):
+    #     for seller_offers in sellers_offers:
+    #         seller = ext.get_first(sellers, lambda s: s == seller_offers['seller'])
+    #         if seller is None:
+    #             seller = seller_offers['seller']
+    #             sellers.append(seller)
+    #
+    #         for offer in seller_offers['offers']:
+    #             seller.add_card_offer(card, offer)
+
     sellers = []
-    cards_redactions = list(itertools.chain(*[[(card, reda) for reda in card.redactions] for card in cards]))
-    pool = eventlet.GreenPool(len(cards_redactions) if len(cards_redactions) < 100 else 100)
-    for card, sellers_offers in pool.imap(get_tcg_card_offers, cards_redactions):
-        for seller_offers in sellers_offers:
+    task = worker.get_task(token)
+    for entry in task.entries:
+        card = ext.get_first(cards, lambda c: c.name == entry.card_name)
+        for seller_offers in entry.offers:
             seller = ext.get_first(sellers, lambda s: s == seller_offers['seller'])
             if seller is None:
                 seller = seller_offers['seller']
@@ -51,15 +66,15 @@ def get_tcg_sellers_async(cards):
     return sellers
 
 
-def get_tcg_card_offers(args):
-    """Parses TCGPlayer sellers list for specified card
-
-    :param args: tuple of (models.Card, models.Redaction)
-    :return: tuple (models.Card, dict {'seller': models.TCGSeller, 'offers': list of models.TCGCardOffer})
-    """
-    card, redaction = args
-    tcg_scrapper = TCGPlayerScrapper(redaction.prices.sid)
-    return card, tcg_scrapper.get_full_info(redaction)
+# def get_tcg_card_offers(args):
+#     """Parses TCGPlayer sellers list for specified card
+#
+#     :param args: tuple of (models.Card, models.Redaction)
+#     :return: tuple (models.Card, dict {'seller': models.TCGSeller, 'offers': list of models.TCGCardOffer})
+#     """
+#     card, redaction = args
+#     tcg_scrapper = TCGPlayerScrapper(redaction.prices.sid)
+#     return card, tcg_scrapper.get_full_info()
 
 
 def get_buymagic_offers_async(cards):

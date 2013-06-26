@@ -59,7 +59,7 @@
                                         {% set status = 'warning' if not col.card_is_available else '' %}
                                         <tr class="{{ status }}">
                                             <td class="text-middle" rowspan="{{ col.offers|length + 1 }}">
-                                                <a href="{{ (col.offers|first).redaction.info.url }}">{{ col.card.name }}</a>
+                                                <a href="{{ (col.offers|first).get_redaction(cards).info.url }}">{{ col.card.name }}</a>
                                             </td>
                                             <td class="text-center text-middle" rowspan="{{ col.offers|length + 1 }}">
                                                 {{ col.card.number }}

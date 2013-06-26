@@ -81,7 +81,7 @@ class TCGPlayerScrapper(object):
                 condition = ext.uni(block.find('td', class_='condition').find('a').contents[0])
 
                 sellers_offers.append({'seller': models.TCGSeller(name, url, rating, sales),
-                                       'offer': models.TCGCardOffer(self.sid, condition, number, price)})
+                                       'offers': models.TCGCardOffer(self.sid, condition, number, price)})
 
             link_next = self._get_next_link(soup)
             if 'disabled' in link_next.attrs:
@@ -89,7 +89,7 @@ class TCGPlayerScrapper(object):
 
             link = ext.get_domain(self.full_url) + link_next['href']
 
-        grouped_sellers = [{'seller': k, 'offers': [seller_offer['offer'] for seller_offer in g]}
+        grouped_sellers = [{'seller': k, 'offers': [seller_offer['offers'] for seller_offer in g]}
                            for k, g in itertools.groupby(sellers_offers, key=lambda so: so['seller'])]
 
         return grouped_sellers
