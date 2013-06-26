@@ -56,7 +56,7 @@ class TCGPlayerScrapper(object):
 
         return prices
 
-    def get_full_info(self, redaction):
+    def get_full_info(self):
         """Parses offers info for card
 
         :return: dict {'seller': models.TCGSeller, 'offers': list of models.TCGCardOffer}
@@ -81,7 +81,7 @@ class TCGPlayerScrapper(object):
                 condition = ext.uni(block.find('td', class_='condition').find('a').contents[0])
 
                 sellers_offers.append({'seller': models.TCGSeller(name, url, rating, sales),
-                                       'offer': models.TCGCardOffer(self.sid, redaction, condition, number, price)})
+                                       'offer': models.TCGCardOffer(self.sid, condition, number, price)})
 
             link_next = self._get_next_link(soup)
             if 'disabled' in link_next.attrs:

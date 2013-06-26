@@ -62,16 +62,12 @@ def totask(dict_task):
 def execute(task):
     print 'executing', task
 
-    cards = dbmodule.get_cards(task.token, only_resolved=True)
     for entry in task.entries:
         if entry.status == 'updated':
             continue
 
-        card = ext.get_first(cards, lambda c: c.name == entry.card_name)
-        redaction = ext.get_first(card.redactions, lambda r: r.name == entry.card_reda)
-
         scrapper = TCGPlayerScrapper(entry.card_sid)
-        offers = scrapper.get_full_info(redaction)
+        offers = scrapper.get_full_info()
         entry.offers = offers
         print 'done', len(offers), entry
 

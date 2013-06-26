@@ -106,12 +106,24 @@ class TCGCardOffer(object):
     Represents tcg seller for specific card
     """
 
-    def __init__(self, sid, redaction, condition, number, price):
+    def __init__(self, sid, condition, number, price):
         self.sid = sid
-        self.redaction = redaction
         self.condition = condition
         self.number = number
         self.price = price
+
+    def get_redaction(self, cards):
+        """Finds card redaction for this card offer
+
+        :param cards: list of models.Card
+        :return: models.Redaction
+        """
+        for card in cards:
+            for reda in card.redactions:
+                if reda.prices.sid == self.sid:
+                    return reda
+
+        return None
 
     def __repr__(self):
         return self.sid + ' ' + self.condition

@@ -56,19 +56,19 @@
                                             <td class="text-center" colspan="4">not available</td>
                                         </tr>
                                     {% else %}
-                                        {% set reda = (col.offers|first).redaction %}
                                         {% set status = 'warning' if not col.card_is_available else '' %}
                                         <tr class="{{ status }}">
                                             <td class="text-middle" rowspan="{{ col.offers|length + 1 }}">
-                                                <a href="{{ reda.info.url }}">{{ col.card.name }}</a>
+                                                <a href="{{ (col.offers|first).redaction.info.url }}">{{ col.card.name }}</a>
                                             </td>
                                             <td class="text-center text-middle" rowspan="{{ col.offers|length + 1 }}">
                                                 {{ col.card.number }}
                                             </td>
                                         </tr>
                                         {% for offer in col.offers %}
+                                            {% set reda = offer.get_redaction(cards) %}
                                             <tr class="{{ status }}">
-                                                <td><a href="{{ offer.redaction.info.url }}">{{ offer.redaction.name }}</a></td>
+                                                <td><a href="{{ reda.info.url }}">{{ reda.name }}</a></td>
                                                 <td class="text-center">{{ offer.condition }}</td>
                                                 <td class="text-center">{{ offer.number }}</td>
                                                 <td class="text-center">${{ offer.price }}</td>
