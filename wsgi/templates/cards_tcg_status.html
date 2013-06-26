@@ -4,11 +4,6 @@
         <h4>Warning!</h4>
         <p>Our robot is parsing info from tcgplayer, please wait until all info will be collected.</p>
     </div>
-    {% if task.entries|length == 0 %}
-    <div class="alert alert-info">
-        <p>Robot is busy or just starting. Please visit this page for more info little bit later.</p>
-    </div>
-    {% else %}
     <table class="table table-bordered table.striped">
         <thead>
             <tr>
@@ -27,5 +22,4 @@
             {% endfor %}
         </tbody>
     </table>
-    {% endif %}
 {% endblock %}

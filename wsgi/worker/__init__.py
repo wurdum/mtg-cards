@@ -25,7 +25,7 @@ def create_new_task(token):
     task_entries = itertools.chain(*[[models.TaskEntry(card.name, reda.name, reda.prices.sid) for reda in card.redactions]
                                      for card in cards])
 
-    return models.Task(token, entries=task_entries)
+    return models.Task(token, entries=list(task_entries))
 
 
 def run_daemon():

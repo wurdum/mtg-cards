@@ -1,5 +1,9 @@
 {% extends 'cards_base.html' %}
 {% block cards_list %}
+<p>
+    <a class="btn btn-info pull-right" href="{{ url_for('tcg_update', token=token) }}">Update</a>
+    <span class="clearfix"></span>
+</p>
 <div class="tabbable">
     <ul class="nav nav-tabs">
         <li class="active"><a href="#av" data-toggle="tab">All cards available</a></li>

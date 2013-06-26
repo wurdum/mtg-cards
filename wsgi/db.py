@@ -117,6 +117,16 @@ def save_task(task):
     db.tasks.update({'token': task.token}, todict(task), upsert=True)
 
 
+def delete_task(token):
+    """
+    Removes task for token
+    """
+    connection = pymongo.MongoClient(MONGO_URL)
+    db = connection[DB]
+
+    db.tasks.remove({'token': token})
+
+
 def tocard(dict_card):
     """
     Converts dict to models.Card

@@ -78,6 +78,12 @@ def tcg(token):
                            sellers_groups={'av': sellers_av, 'al': sellers_al})
 
 
+@app.route('/<token>/shop/tcg/update', methods=['GET'])
+def tcg_update(token):
+    db.delete_task(token)
+    return redirect(url_for('tcg', token=token))
+
+
 @app.route('/<token>/shop/bm', methods=['GET'])
 def bm(token):
     cards = db.get_cards(token, only_resolved=True)
