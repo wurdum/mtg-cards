@@ -27,7 +27,6 @@ def execute(task):
     :param task: instance of models.Task
     :return:
     """
-    print 'executing', task
     for entry in task.entries:
         if entry.status == 'updated':
             continue
@@ -38,11 +37,8 @@ def execute(task):
         entry.status = 'updated'
         db.save_task(task)
 
-        print 'done', len(offers), entry
-
     task.status = 'updated'
     db.save_task(task)
-    print 'done', task
 
 
 if __name__ == '__main__':
