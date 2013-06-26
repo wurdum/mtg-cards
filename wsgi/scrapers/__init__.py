@@ -19,6 +19,10 @@ def resolve_cards_async(content):
 
 
 def _filter_lands(content):
+    """Removes lands cards
+
+    :param content: list of dict (card name, card number)
+    """
     lands = ['mountain', 'swamp', 'island', 'plains', 'forest']
     for record in content:
         if record['name'].strip().lower().split()[0] not in lands:

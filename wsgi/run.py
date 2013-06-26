@@ -1,3 +1,4 @@
+import subprocess
 from flask import Flask, render_template, request, url_for, redirect
 import ext
 import scrapers
@@ -110,6 +111,11 @@ def delete():
 @app.errorhandler(500)
 def error(e=None):
     return render_template('error.html')
+
+
+def runw():
+    # subprocess.Popen(['nohup', 'python', 'worker.py'])
+    subprocess.Popen(['python', 'worker.py'])
 
 
 if __name__ == "__main__":
