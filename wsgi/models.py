@@ -264,3 +264,33 @@ class ShopOffer(object):
 
     def __repr__(self):
         return '%s %s %s' % (self.card, self.price, self.type)
+
+
+class Task(object):
+    """
+    Represents task for parsing tgc sellers
+    """
+
+    def __init__(self, token, status='need update', entries=None):
+        self.token = token
+        self.status = status
+        self.entries = entries
+
+    def __repr__(self):
+        return '%s [%s]' % (self.token, self.status)
+
+
+class TaskEntry(object):
+    """
+    Represents task for parsing sellers for particular card
+    """
+
+    def __init__(self, card_name, card_reda, card_sid, status='need update', offers=None):
+        self.card_name = card_name
+        self.card_reda = card_reda
+        self.card_sid = card_sid
+        self.status = status
+        self.offers = offers
+
+    def __repr__(self):
+        return '%s - %s [%s]' % (self.card_name, self.card_reda, self.status)

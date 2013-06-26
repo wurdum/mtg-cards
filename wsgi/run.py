@@ -4,6 +4,7 @@ import ext
 import scrapers
 import db
 import filters
+import worker
 
 app = Flask(__name__)
 filters.register(app)
@@ -62,6 +63,11 @@ def stats(token):
 
 @app.route('/<token>/shop/tcg', methods=['GET'])
 def tcg(token):
+    task = worker.get_task(token)
+    if task.status == 'need update':
+        worker.run_daemon()
+        return 'running daemon'
+
     cards = db.get_cards(token, only_resolved=True)
     sellers = scrapers.get_tcg_sellers_async(token, cards)
 
@@ -111,11 +117,6 @@ def delete():
 @app.errorhandler(500)
 def error(e=None):
     return render_template('error.html')
-
-
-def runw():
-    # subprocess.Popen(['nohup', 'python', 'worker.py'])
-    subprocess.Popen(['python', 'worker.py'])
 
 
 if __name__ == "__main__":

@@ -22,6 +22,16 @@ def get_unique_token():
             return token
 
 
+def get_tokens():
+    """
+    Returns list of tokens
+    """
+    connection = pymongo.MongoClient(MONGO_URL)
+    db = connection[DB]
+
+    return [rec['token'] for rec in db.list.find({}, {'token': 1})]
+
+
 def get_cards(token, only_resolved=False):
     """Searches cards list by token
 
@@ -82,9 +92,34 @@ def delete_cards(token):
     db.list.remove({'token': token})
 
 
+def get_task(token):
+    """
+    Returns task for cards list with specified token
+    """
+    connection = pymongo.MongoClient(MONGO_URL)
+    db = connection[DB]
+
+    dbtask = db.tasks.find_one({'token': token})
+    if dbtask is None:
+        return None
+
+    return totask(dbtask)
+
+
+def save_task(task):
+    """Updates or adds task to db
+
+    :param task: models.Task object
+    """
+    connection = pymongo.MongoClient(MONGO_URL)
+    db = connection[DB]
+
+    db.tasks.update({'token': task.token}, todict(task), upsert=True)
+
+
 def tocard(dict_card):
     """
-    Converts dict to card
+    Converts dict to models.Card
     """
     redas = [toreda(r) for r in dict_card['redactions']]
     return models.Card(dict_card['name'], dict_card['number'], redactions=redas)
@@ -92,11 +127,36 @@ def tocard(dict_card):
 
 def toreda(dict_reda):
     """
-    Converts dict to redaction
+    Converts dict to models.Redaction
     """
     info = models.CardInfo(**dict_reda['info']) if 'info' in dict_reda and dict_reda['info'] else None
     prices = models.CardPrices(**dict_reda['prices']) if 'prices' in dict_reda and dict_reda['prices'] else None
     return models.Redaction(dict_reda['name'], info=info, prices=prices)
+
+
+def tooffer(dict_offer):
+    """
+    Converts dict to models.TCGCardOffer
+    """
+    return {'seller': models.TCGSeller(**dict_offer['seller']),
+            'offers': [models.TCGCardOffer(**dbcoff) for dbcoff in dict_offer['offers']]}
+
+
+def toentry(dict_entry):
+    """
+    Converts dict to models.TaskEntry
+    """
+    offers = [tooffer(off) for off in dict_entry['offers']] if 'offers' in dict_entry and dict_entry['offers'] else None
+    return models.TaskEntry(dict_entry['card_name'], dict_entry['card_reda'], dict_entry['card_sid'],
+                            dict_entry['status'], offers=offers)
+
+
+def totask(dict_task):
+    """
+    Converts dict to models.Task
+    """
+    entries = [toentry(dbe) for dbe in dict_task['entries']] if 'entries' in dict_task and dict_task['entries'] else None
+    return models.Task(dict_task['token'], dict_task['status'], entries=entries)
 
 
 def todict(obj, classkey=None):

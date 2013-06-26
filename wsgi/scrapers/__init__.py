@@ -37,18 +37,6 @@ def get_tcg_sellers_async(token, cards):
     :param cards: list of models.Card objects
     :return: list of models.TCGSeller objects with filled cards property
     """
-    # sellers = []
-    # cards_redactions = list(itertools.chain(*[[(card, reda) for reda in card.redactions] for card in cards]))
-    # pool = eventlet.GreenPool(len(cards_redactions) if len(cards_redactions) < 100 else 100)
-    # for card, sellers_offers in pool.imap(get_tcg_card_offers, cards_redactions):
-    #     for seller_offers in sellers_offers:
-    #         seller = ext.get_first(sellers, lambda s: s == seller_offers['seller'])
-    #         if seller is None:
-    #             seller = seller_offers['seller']
-    #             sellers.append(seller)
-    #
-    #         for offer in seller_offers['offers']:
-    #             seller.add_card_offer(card, offer)
 
     sellers = []
     task = worker.get_task(token)
