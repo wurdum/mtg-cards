@@ -9,6 +9,9 @@ from scrapers.tcgplayer import TCGPlayerScrapper
 
 
 def run():
+    """
+    Runs parsing sellers for each non 'updated' tasks
+    """
     tokens = db.get_tokens()
     for token in tokens:
         task = worker.get_task(token)
@@ -19,6 +22,11 @@ def run():
 
 
 def execute(task):
+    """Parses tcgplayer sellers info for cards in specified task
+
+    :param task: instance of models.Task
+    :return:
+    """
     print 'executing', task
     for entry in task.entries:
         if entry.status == 'updated':

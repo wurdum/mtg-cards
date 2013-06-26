@@ -1,0 +1,31 @@
+{% extends 'cards_base.html' %}
+{% block cards_list %}
+    <div class="alert alert-block">
+        <h4>Warning!</h4>
+        <p>Our robot is parsing info from tcgplayer, please wait until all info will be collected.</p>
+    </div>
+    {% if task.entries|length == 0 %}
+    <div class="alert alert-info">
+        <p>Robot is busy or just starting. Please visit this page for more info little bit later.</p>
+    </div>
+    {% else %}
+    <table class="table table-bordered table.striped">
+        <thead>
+            <tr>
+                <th>name</th>
+                <th>redaction</th>
+                <th>status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in task.entries %}
+            <tr class="{% if entry.status == 'need update' %}warning{% endif %}">
+                <td>{{ entry.card_name }}</td>
+                <td>{{ entry.card_reda }}</td>
+                <td class="text-center text-middle">{{ entry.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+{% endblock %}

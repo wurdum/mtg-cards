@@ -5,6 +5,10 @@ import db
 
 
 def get_task(token):
+    """Returns task for token or creates new
+
+    :param token: str
+    """
     task = db.get_task(token)
     if task is None:
         task = create_new_task(token)
@@ -14,6 +18,9 @@ def get_task(token):
 
 
 def create_new_task(token):
+    """
+    Creates new task fot token
+    """
     cards = db.get_cards(token, only_resolved=True)
     task_entries = itertools.chain(*[[models.TaskEntry(card.name, reda.name, reda.prices.sid) for reda in card.redactions]
                                      for card in cards])
@@ -22,6 +29,9 @@ def create_new_task(token):
 
 
 def run_daemon():
+    """
+    Runs daemon script if it wasn't started
+    """
     if not daemon_is_run():
         import sys
         Popen(['nohup', sys.executable, 'worker/daemon.py'])

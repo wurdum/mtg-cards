@@ -1,4 +1,3 @@
-import itertools
 import eventlet
 import ext
 import worker
@@ -30,16 +29,14 @@ def _filter_lands(content):
             yield record
 
 
-def get_tcg_sellers_async(token, cards):
-    """Parses TCGPlayer sellers that could sell specified cards
+def get_tcg_sellers(task, cards):
+    """Reads task results and parses tcg sellers info
 
-    :param token: list str token
+    :param task: object of models.Task
     :param cards: list of models.Card objects
     :return: list of models.TCGSeller objects with filled cards property
     """
-
     sellers = []
-    task = worker.get_task(token)
     for entry in task.entries:
         card = ext.get_first(cards, lambda c: c.name == entry.card_name)
         for seller_offers in entry.offers:
@@ -52,17 +49,6 @@ def get_tcg_sellers_async(token, cards):
                 seller.add_card_offer(card, offer)
 
     return sellers
-
-
-# def get_tcg_card_offers(args):
-#     """Parses TCGPlayer sellers list for specified card
-#
-#     :param args: tuple of (models.Card, models.Redaction)
-#     :return: tuple (models.Card, dict {'seller': models.TCGSeller, 'offers': list of models.TCGCardOffer})
-#     """
-#     card, redaction = args
-#     tcg_scrapper = TCGPlayerScrapper(redaction.prices.sid)
-#     return card, tcg_scrapper.get_full_info()
 
 
 def get_buymagic_offers_async(cards):

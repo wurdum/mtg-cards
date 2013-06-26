@@ -63,14 +63,13 @@ def stats(token):
 
 @app.route('/<token>/shop/tcg', methods=['GET'])
 def tcg(token):
+    cards = db.get_cards(token, only_resolved=True)
     task = worker.get_task(token)
     if task.status == 'need update':
         worker.run_daemon()
-        return 'running daemon'
+        return render_template('cards_tcg_status.html', token=token, cards=cards, task=task)
 
-    cards = db.get_cards(token, only_resolved=True)
-    sellers = scrapers.get_tcg_sellers_async(token, cards)
-
+    sellers = scrapers.get_tcg_sellers(task, cards)
     sellers_av = filter(lambda s: s.has_all_cards(cards), sellers)
     sellers_av = sorted(sellers_av, key=lambda s: s.cards_cost)
     sellers_al = sorted(sellers, key=lambda s: s.available_cards_num, reverse=True)
