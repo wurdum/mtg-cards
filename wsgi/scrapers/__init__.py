@@ -72,7 +72,7 @@ def get_spellshop_offers_async(cards):
     :return: dict {models.Card: models.ShopOffer}
     """
     offers = {}
-    pool = eventlet.GreenPool(len(cards))
+    pool = eventlet.GreenPool(10 if len(cards) > 10 else len(cards))
     for card, offer in pool.imap(spellshop.get_offers, cards):
         offers[card] = offer
 
