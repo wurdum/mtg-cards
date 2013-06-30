@@ -1,4 +1,5 @@
 # coding=utf-8
+import io
 import random
 import re
 import string
@@ -133,7 +134,7 @@ def read_file(stream):
 
     :return: list of tuples (card name, card number)
     """
-    if isinstance(stream, cStringIO.OutputType):
+    if isinstance(stream, cStringIO.OutputType) or isinstance(stream, io.BytesIO):
         full_content = stream.getvalue()
         stripped_lines = [l.strip(' \t\r') for l in full_content.split('\n')]
         cards = [parse_card(card) for card in stripped_lines if card]

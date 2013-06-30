@@ -40,9 +40,12 @@ def run_daemon():
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         script_path = os.path.join(base_dir, 'worker/daemon.py')
 
-        PY_VERSION = 'python-' + ('.'.join(map(str, sys.version_info[:2])))
-        sys.path.insert(0, os.path.dirname(__file__) or '.')
-        python_exec = os.environ['HOME'] + '/' + PY_VERSION + '/virtenv/bin/python'
+        if 'OPENSHIFT_APP_NAME' in os.environ:
+            PY_VERSION = 'python-' + ('.'.join(map(str, sys.version_info[:2])))
+            sys.path.insert(0, os.path.dirname(__file__) or '.')
+            python_exec = os.environ['HOME'] + '/' + PY_VERSION + '/virtenv/bin/python'
+        else:
+            python_exec = os.path.join(base_dir, 'venv/bin/python')
 
         Popen(['nohup', python_exec, script_path])
 
